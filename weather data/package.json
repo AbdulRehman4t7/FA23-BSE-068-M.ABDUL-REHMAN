@@ -1,0 +1,16 @@
+{
+  "name": "nodejs-weather-app",
+  "version": "1.0.0",
+  "description": "A beginner-friendly Node.js project demonstrating Event Loop, Core Modules, and NPM",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "fetch": "node fetchWeather.js"
+  },
+  "keywords": ["nodejs", "weather", "beginner"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.0"
+  }
+}
