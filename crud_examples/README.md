@@ -1,10 +1,10 @@
 # CRUD Examples (MongoDB, MySQL, SQLite)
-MONGODB CRUD OUTPUT
-<img width="727" height="211" alt="mongodb " src="https://github.com/user-attachments/assets/38b09736-8677-4cc1-8cf3-bc2b9afc4de5" />
-MYSQL CRUD OUTPUT
-<img width="578" height="191" alt="mysql" src="https://github.com/user-attachments/assets/92c31064-0c78-450e-a0ff-82dd80f14d05" />
-SQLITE CRUD OUTPUT
-<img width="686" height="242" alt="sqlite" src="https://github.com/user-attachments/assets/28642a4a-724b-468c-9d47-8333b7949298" />
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/38b09736-8677-4cc1-8cf3-bc2b9afc4de5" width="30%" />
+  <img src="https://github.com/user-attachments/assets/92c31064-0c78-450e-a0ff-82dd80f14d05" width="30%" />
+  <img src="https://github.com/user-attachments/assets/28642a4a-724b-468c-9d47-8333b7949298" width="30%" />
+</p>
+
 
 
 
