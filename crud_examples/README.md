@@ -1,4 +1,13 @@
 # CRUD Examples (MongoDB, MySQL, SQLite)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/38b09736-8677-4cc1-8cf3-bc2b9afc4de5" width="30%" />
+  <img src="https://github.com/user-attachments/assets/92c31064-0c78-450e-a0ff-82dd80f14d05" width="30%" />
+  <img src="https://github.com/user-attachments/assets/28642a4a-724b-468c-9d47-8333b7949298" width="30%" />
+</p>
+
+
+
+
 
 Simple CRUD applications built with Node.js and Express, showcasing three data stores:
 - MongoDB (`mongodb_crud`) on port 3000
