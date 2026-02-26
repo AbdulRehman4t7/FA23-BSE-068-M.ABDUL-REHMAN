@@ -1,4 +1,27 @@
 # Mini Online Store API (Express.js Lab Project)
+## 📌 Project Outputs
+
+### 🟢 Output 1
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3e91cf6b-591a-4e1b-8f96-6ecbc367d850" width="900">
+</p>
+
+---
+
+### 🟢 Output 2
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c3256ff5-72e1-49e5-88c9-3d37ccae4d64" width="700">
+</p>
+
+---
+
+### 🟢 Output 3
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/5f4d9df7-b890-4c3b-b159-8b4549e06d96" width="400">
+</p>
+
+
+
 
 Yeh project Express.js par based ek chhota “Mini Online Store API” hai jo MVC (Model–View–Controller) style ki clean & scalable architecture dikhata hai. Iska primary maksad middleware, routing, express.Router aur proper folder structure ko demonstrate karna hai.
 
