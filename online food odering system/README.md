@@ -7,7 +7,38 @@ A modern, professional food ordering web application built with Node.js, Express
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-v5.3-purple)
 ![MySQL](https://img.shields.io/badge/MySQL-v8.0-orange)
 
+---## 📸 Project Outputs
+
 ---
+
+### 🏠 Home Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/69eff0f6-6751-4745-b199-dec9409c67c8" width="700">
+</p>
+
+---
+
+### 🍽 Menu Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/2757ddca-0c48-4b11-bddd-9af892c0d7be" width="700">
+</p>
+
+---
+
+### 🛒 Create Order Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/39bdb9d6-1457-46cf-9f62-ef048af1c0cc" width="650">
+</p>
+
+---
+
+### 🔄 Updated Home Page
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b5479279-17c3-46bf-895d-453396c9ef17" width="700">
+</p>
+
+
+
 
 ## 📋 Table of Contents
 
