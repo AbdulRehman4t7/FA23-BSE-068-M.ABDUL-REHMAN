@@ -1,0 +1,673 @@
+
+===== BEGIN DOCUMENT: Designing REST API.pdf =====
+Designing REST API
+Lecture Notes
+Topic: Designing REST API Using Case Study
+Duration: 2 Hours
+Lecture Type: Theory + Practical (Step-by-Step)
+Level: Computer Science Students
+ Introduction to REST API (0 – 20 Minutes)
+What is an API?
+API (Application Programming Interface) is a set of rules that allows different software systems to
+communicate with each other.
+Real-life Example:
+When you use Foodpanda or Careem, the mobile app communicates with a server using APIs.
+The app sends a request:
+“Show available restaurants”
+The server responds with restaurant data in JSON format.
+What is REST?
+REST (Representational State Transfer) is an architectural style for designing networked applications.
+It uses:
+HTTP protocol
+Standard HTTP methods
+Stateless communication
+REST Principles:
+
+1. Stateless
+2. Client-Server Architecture
+3. Uniform Interface
+4. Resource-based
+HTTP Methods Used in REST
+MethodPurposeReal-life Example
+GETRetrieve dataView product
+POSTCreate dataRegister user
+PUTUpdate dataUpdate profile
+DELETEDelete dataDelete account
+ Student Activity 1 (After 20 Minutes)
+Think-Pair-Share Activity
+Ask students:
+What happens when you login to Facebook?
+Which HTTP method is used?
+Is login GET or POST? Why?
+ Expected Answer: POST (because credentials are sent securely in request body)
+ Case Study Introduction (20 – 40 Minutes)
+Case Study: Online Bookstore REST API
+We will design a REST API for an Online Bookstore System.
+System Requirements:
+The system should allow:
+1. User registration & login
+2. Add new books
+3. View all books
+4. Update book details
+5. Delete book
+
+6. Place orders
+Step 1: Identify Resources
+In REST, everything is a Resource.
+For Online Bookstore:
+Users
+Books
+Orders
+Step 2: Define Endpoints
+Users
+OperationMethodEndpoint
+Register UserPOST/users
+Get All UsersGET/users
+Get Single UserGET/users/{id}
+Update UserPUT/users/{id}
+Delete UserDELETE/users/{id}
+Books
+OperationMethodEndpoint
+Add BookPOST/books
+Get All BooksGET/books
+Get BookGET/books/{id}
+Update BookPUT/books/{id}
+Delete BookDELETE/books/{id}
+Orders
+OperationMethodEndpoint
+Create OrderPOST/orders
+Get OrdersGET/orders
+
+ Student Activity 2 (40 Minutes)
+Quick Quiz (5 minutes)
+1. What is the endpoint to update book with id = 10?
+2. Which HTTP method is used to delete a user?
+3. Is /getAllBooks a good REST endpoint? Why?
+ Discussion:
+REST uses nouns, not verbs.
+Correct: /books
+ REST API Design Best Practices (40 – 60 Minutes)
+1. Use Nouns, Not Verbs
+❌ /getBooks
+✅ /books
+2. Use Plural Resource Names
+❌ /book
+✅ /books
+3. Use Proper HTTP Status Codes
+CodeMeaning
+200OK
+201Created
+400Bad Request
+404Not Found
+500Server Error
+4. Use JSON Format
+Example Response:
+
+{
+  "id": 1,
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "price": 500
+}
+ Student Activity 3 (After 60 Minutes – 10 min break discussion)
+Group Activity:
+Design REST endpoints for:
+ University Management System
+Resources:
+Students
+Courses
+Teachers
+Each group presents their endpoints.
+ Practical Implementation (Step-by-Step) (60 – 100 Minutes)
+We will implement using:
+Node.js
+Express.js
+Postman
+Step 1: Initialize Project
+npm init -y
+Install dependencies:
+npm install express body-parser
+Step 2: Create Server
+const express = require('express');
+const app = express();
+app.use(express.json());
+app.listen(3000, () => {
+    console.log("Server running on port 3000");
+});
+Step 3: Create Books API
+
+GET All Books
+let books = [];
+app.get('/books', (req, res) => {
+    res.json(books);
+});
+POST Book
+app.post('/books', (req, res) => {
+    const book = req.body;
+    books.push(book);
+    res.status(201).json(book);
+});
+GET Book by ID
+app.get('/books/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const book = books.find(b => b.id === id);
+    if (!book) {
+        return res.status(404).json({message: "Book not found"});
+    }
+    res.json(book);
+});
+PUT Update Book
+app.put('/books/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    const index = books.findIndex(b => b.id === id);
+    if (index === -1) {
+        return res.status(404).json({message: "Book not found"});
+    }
+    books[index] = req.body;
+    res.json(books[index]);
+});
+DELETE Book
+app.delete('/books/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    books = books.filter(b => b.id !== id);
+    res.json({message: "Book deleted"});
+});
+ Student Activity 4 (Hands-on Practice – 15 Minutes)
+Students must:
+1. Add 3 books using POST
+2. Retrieve all books
+3. Update one book
+
+4. Delete one book
+Use Postman to test.
+ Advanced Concepts (100 – 115 Minutes)
+1. Query Parameters
+Example:
+GET /books?author=Ali
+2. Pagination
+GET /books?page=1&limit=10
+3. Authentication (Basic Concept)
+Use JWT tokens for secure APIs.
+Login Flow:
+1. User sends credentials
+2. Server verifies
+3. Server sends token
+4. Client sends token in header
+ Final Class Discussion (115 – 120 Minutes)
+Ask students:
+1. Why REST APIs are stateless?
+2. What happens if we don't use proper HTTP status codes?
+3. What improvements can we add to our bookstore API?
+Summary of Today’s Lecture
+Students learned:
+✔ What REST API is
+✔ REST principles
+✔ Designing endpoints
+✔ HTTP methods
+✔ Status codes
+
+✔ Practical implementation in Node.js
+✔ Testing with Postman
+Assignment
+Design REST API for:
+ E-Commerce System
+Resources:
+Customers
+Products
+Cart
+Orders
+Payments
+Draw:
+Endpoints
+HTTP Methods
+Sample JSON
+References (For Academic Integrity)
+REST architectural style defined by Roy Fielding (2000 doctoral dissertation)
+HTTP Protocol (RFC 2616)
+If you need, I can also provide:
+PowerPoint slides
+Lab manual version
+ER diagram for bookstore
+Database integration version (MongoDB/MySQL)
+JWT authentication full implementation
+===== END DOCUMENT: Designing REST API.pdf =====
+
+
+===== BEGIN DOCUMENT: Implementing REST API.pdf =====
+Implementing REST API
+Lecture Notes
+Topic: Implementing REST API Using Case Study
+Duration: 2 Hours
+Lecture Type: Theory + Step-by-Step Practical
+ Learning Objectives
+By the end of this lecture, students will be able to:
+1. Understand what a REST API is.
+2. Explain REST principles.
+3. Design API endpoints.
+4. Implement a REST API step-by-step.
+5. Test API using tools like Postman.
+6. Apply CRUD operations in real-life case studies.
+ Lecture Plan (2 Hours)
+TimeActivity
+0 – 20 minIntroduction to REST & APIs
+20 – 40 minREST Principles & HTTP Methods
+40 – 60 minCase Study Discussion + API Design
+60 – 70 minStudent Activity 1
+70 – 100 minStep-by-Step Practical Implementation
+100 – 110 minTesting & Error Handling
+110 – 120 minStudent Quiz + Wrap-up
+
+Part 1: Introduction to API & REST (0 – 20 min)
+What is an API?
+API stands for Application Programming Interface.
+ Real-life Example:
+Think of a restaurant waiter:
+You (client) give order.
+Waiter (API) sends order to kitchen (server).
+Kitchen prepares food.
+Waiter brings food back to you.
+So:
+Client = Frontend
+Server = Backend
+API = Communication bridge
+What is REST?
+REST stands for Representational State Transfer.
+It is an architectural style for building web services.
+It uses HTTP protocol.
+Part 2: REST Principles (20 – 40 min)
+REST is based on 6 main principles:
+ Client-Server Architecture
+Frontend and backend are separate.
+ Stateless
+Each request must contain all necessary information.
+Server does NOT store client session.
+Example:
+Every time you go to ATM, you insert card again.
+ Cacheable
+Responses can be cached to improve performance.
+
+ Uniform Interface
+Standard URL and HTTP methods.
+ Layered System
+Can have security layer, database layer etc.
+ Code on Demand (Optional)
+HTTP Methods in REST
+MethodPurposeExample
+GETRetrieve dataGet student list
+POSTCreate new dataAdd student
+PUTUpdate dataUpdate student
+DELETEDelete dataRemove student
+易 Mini Discussion Question (After 30–40 Minutes)
+Ask students:
+1. Why REST APIs are stateless?
+2. What problems occur if server stores session?
+3. Can we use POST instead of GET for fetching data? Why/Why not?
+Part 3: Case Study – Student Management System (40 – 60 min)
+ Problem Statement
+We want to build a REST API for a Student Management System.
+Each student has:
+id
+name
+email
+department
+Step 1: Identify Resources
+
+In REST, everything is a resource.
+Resource here = Student
+Base URL:
+/api/students
+Step 2: Design Endpoints
+OperationMethodURL
+Get all studentsGET/api/students
+Get student by idGET/api/students/{id}
+Add studentPOST/api/students
+Update studentPUT/api/students/{id}
+Delete studentDELETE/api/students/{id}
+  Student Activity 1 (60 – 70 min)
+Divide students into groups.
+ Task:
+Design REST API for:
+Library Management System OR
+Online Store
+They must:
+Identify resources
+Define endpoints
+Choose HTTP methods
+Discuss answers after 10 minutes.
+Part 4: Step-by-Step Practical Implementation (70 – 100 min)
+We will implement using:
+Node.js
+Express.js
+Postman
+(You can also adapt to PHP/Laravel, Python/Django etc.)
+
+Step 1: Initialize Project
+npm init -y
+npm install express
+Create file:
+server.js
+Step 2: Basic Server Setup
+const express = require('express');
+const app = express();
+app.use(express.json());
+app.listen(3000, () => {
+    console.log("Server running on port 3000");
+});
+Step 3: Create Dummy Data
+let students = [
+    { id: 1, name: "Ali", email: "ali@gmail.com", department: "CS" },
+    { id: 2, name: "Sara", email: "sara@gmail.com", department: "IT" }
+];
+Step 4: Implement CRUD Operations
+GET All Students
+app.get('/api/students', (req, res) => {
+    res.json(students);
+});
+GET Student By ID
+app.get('/api/students/:id', (req, res) => {
+    const student = students.find(s => s.id == req.params.id);
+    if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+    }
+    res.json(student);
+});
+POST Create Student
+app.post('/api/students', (req, res) => {
+    const newStudent = {
+        id: students.length + 1,
+        ...req.body
+    };
+    students.push(newStudent);
+    res.status(201).json(newStudent);
+});
+
+PUT Update Student
+app.put('/api/students/:id', (req, res) => {
+    const student = students.find(s => s.id == req.params.id);
+    if (!student) {
+        return res.status(404).json({ message: "Student not found" });
+    }
+    student.name = req.body.name;
+    student.email = req.body.email;
+    student.department = req.body.department;
+    res.json(student);
+});
+DELETE Student
+app.delete('/api/students/:id', (req, res) => {
+    students = students.filter(s => s.id != req.params.id);
+    res.json({ message: "Student deleted successfully" });
+});
+Part 5: Testing Using Postman (100 – 110 min)
+Tool: Postman
+Steps:
+1. Open Postman
+2. Select HTTP method
+3. Enter URL
+4. Send request
+5. Check response
+Common HTTP Status Codes
+CodeMeaning
+200OK
+201Created
+400Bad Request
+404Not Found
+500Server Error
+易 Final Student Quiz (110 – 120 min)
+1. What does REST stand for?
+2. Difference between PUT and POST?
+
+3. Why APIs should be stateless?
+4. Design endpoints for Teacher resource.
+5. What status code is used when resource is created?
+ Summary
+Today we learned:
+What REST API is
+REST principles
+HTTP methods
+How to design endpoints
+How to implement CRUD
+How to test API
+ Homework
+1. Connect this API to MongoDB.
+2. Add validation.
+3. Implement authentication using JWT.
+4. Deploy on cloud (e.g., Render or Railway).
+===== END DOCUMENT: Implementing REST API.pdf =====
+
+
+===== BEGIN DOCUMENT: REST API Security Overview.pdf =====
+REST API Security Overview
+ Lecture Notes
+Topic: REST API Security – CORS, XSS, DDoS | Authentication &
+Authorization | Session Handling in REST
+Duration: 2 Hours
+Lecture Type: Theory
+Designed for: Computer Science Students
+ Lecture Plan Overview (2 Hours)
+TimeTopic
+0–30 minIntroduction to REST API Security + CORS
+30–60 minXSS & DDoS
+60–90 minAuthentication vs Authorization
+90–120 minSession Handling in REST + Wrap-up Activity
+⏱ 0–30 Minutes
+ Introduction to REST API Security
+ What is REST?
+REST (Representational State Transfer) is an architectural style for designing web services. REST APIs use
+HTTP methods:
+GET
+POST
+PUT
+
+DELETE
+Real-Life Example:
+Think of a restaurant:
+Menu = API endpoints
+Order = Request
+Food served = Response
+Waiter = Server
+ Why Security is Important?
+If APIs are not secured:
+Hackers can steal user data
+Attackers can overload servers
+Unauthorized users can access restricted data
+Example:
+Imagine a banking API without authentication — anyone could check or transfer money!
+  CORS (Cross-Origin Resource Sharing)
+Definition:
+CORS is a security mechanism that controls how resources on a web server can be requested from
+another domain.
+Browsers enforce CORS.
+Real-Life Example:
+You live in Hostel A. Only students from Hostel A can enter.
+If someone from Hostel B wants to enter, permission is required.
+易 Same-Origin Policy
+By default, browsers block:
+Frontend: http://example.com
+API: http://api.example.com
+Even though related, they are different origins.
+⚙ How CORS Works
+
+Server sends headers like:
+Access-Control-Allow-Origin: https://example.com
+Access-Control-Allow-Methods: GET, POST
+Access-Control-Allow-Headers: Content-Type
+ CORS Security Best Practices
+❌ Never use Access-Control-Allow-Origin: * for sensitive APIs
+✅ Allow only trusted domains
+✅ Restrict methods
+✅ Validate tokens server-side
+ Student Activity (5 Minutes)
+Ask students:
+1. Why does CORS exist?
+2. What happens if we allow * for banking APIs?
+3. Is CORS a server-side or browser-side security feature?
+⏱ 30–60 Minutes
+ XSS (Cross-Site Scripting)
+Definition:
+XSS is an attack where malicious scripts are injected into trusted websites.
+ Types of XSS
+1. Stored XSS
+2. Reflected XSS
+3. DOM-based XSS
+易 Real-Life Example:
+A comment box allows users to post comments.
+Attacker enters:
+<script>alert("Hacked!")</script>
+If not sanitized, every user visiting the page sees it.
+
+ Impact of XSS
+Cookie theft
+Session hijacking
+Redirect to malicious sites
+ Prevention Techniques
+Input validation
+Output encoding
+Use HTTPOnly cookies
+Use Content Security Policy (CSP)
+  DDoS (Distributed Denial of Service)
+Definition:
+DDoS is an attack where multiple systems flood a server with traffic to make it unavailable.
+Real-Life Example:
+Imagine 10,000 fake customers enter a shop and don’t buy anything — real customers cannot enter.
+Famous Example:
+In 2016, the company Dyn was attacked, affecting websites like:
+Twitter
+Netflix
+GitHub
+(This is a real-world referenced event.)
+ DDoS Protection
+Rate limiting
+CAPTCHA
+API Gateway
+Load balancers
+CDN services
+
+ Student Quick Quiz (5 Minutes)
+1. Difference between XSS and DDoS?
+2. Which attack targets users? Which targets servers?
+3. How does rate limiting help?
+⏱ 60–90 Minutes
+ Authentication vs Authorization
+ Authentication (AuthN)
+Definition:
+Verifying who you are.
+Example:
+Username & password
+OTP
+Biometrics
+ Authorization (AuthZ)
+Definition:
+Verifying what you can access.
+Example:
+Student cannot access admin panel
+Teacher can upload marks
+易 Real-Life Example
+At University:
+ID Card Check = Authentication
+Access to Lab = Authorization
+ Common Authentication Methods in REST
+1. Basic Authentication
+2. API Keys
+
+3. Token-Based Authentication
+4. JWT (JSON Web Token)
+5. OAuth 2.0
+ JWT (JSON Web Token)
+Definition:
+JWT is a compact, URL-safe token format used for authentication.
+Structure:
+Header.Payload.Signature
+Example Use Case:
+User logs in → Server generates JWT → Client stores token → Sends token in header:
+Authorization: Bearer <token>
+ OAuth 2.0
+Used by:
+Google
+Facebook
+Microsoft
+Example:
+"Login with Google"
+ Class Discussion (5 Minutes)
+Ask:
+Why is JWT preferred in REST?
+Why not store passwords in frontend?
+Is authentication enough without authorization?
+⏱ 90–120 Minutes
+ Session Handling in REST
+❓ What is a Session?
+A session stores user state between requests.
+
+ Problem:
+REST is stateless.
+Each request must contain all information.
+ Two Approaches to Session Handling
+ Traditional Session-Based
+Server stores session
+Client stores session ID in cookie
+Problem:
+Not scalable
+Hard for microservices
+ Token-Based (Recommended for REST)
+Server issues JWT
+Client stores token
+Each request includes token
+Advantages:
+Scalable
+Stateless
+Works with mobile apps
+ Secure Session Practices
+Use HTTPS
+Set HttpOnly & Secure cookies
+Short token expiry
+Refresh tokens
+Revoke compromised tokens
+易 Complete Flow Example
+1. User logs in
+2. Server validates credentials
+
+3. Server generates JWT
+4. Client stores JWT
+5. Client sends token in header
+6. Server verifies token
+7. Access granted or denied
+ Final Group Activity (10 Minutes)
+Divide students into groups:
+Design secure API for:
+Online Banking System
+E-Commerce Website
+University Portal
+Each group must:
+Choose authentication method
+Explain how to prevent XSS
+Explain how to prevent DDoS
+Define authorization levels
+Groups present for 2 minutes each.
+ Key Takeaways
+CORS protects browsers from cross-origin attacks
+XSS targets users
+DDoS targets availability
+Authentication ≠ Authorization
+REST prefers token-based session handling
+Security must be multi-layered
+ Important Definitions (May Require Citation if Used in
+Research)
+If students use definitions in assignments, they should cite:
+REST – defined by Roy Fielding in his doctoral dissertation (2000)
+OAuth 2.0 – IETF Standard
+
+JWT – RFC 7519
+Same-Origin Policy – Web security model defined by browsers
+ End of Lecture Summary
+Security in REST APIs is not optional — it is essential.
+Without:
+Proper CORS → Browser misuse
+XSS protection → User data theft
+DDoS protection → Service unavailability
+AuthN & AuthZ → Unauthorized access
+Secure sessions → Account hijacking
+A secure API is like a well-guarded university:
+Gatekeeper (Authentication)
+Access control (Authorization)
+CCTV & Rules (Security policies)
+Visitor log (Session handling)
+===== END DOCUMENT: REST API Security Overview.pdf =====

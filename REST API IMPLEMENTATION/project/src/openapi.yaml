@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: REST API Starter
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api/v1
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      responses:
+        '200':
+          description: OK
+  /items:
+    get:
+      summary: List items
+      parameters:
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1 }
+        - in: query
+          name: pageSize
+          schema: { type: integer, minimum: 1, maximum: 100 }
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create item
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                price: { type: number, minimum: 0 }
+              required: [name, price]
+      responses:
+        '201': { description: Created }
+  /items/{id}:
+    get:
+      summary: Get item
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+    put:
+      summary: Update item
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                price: { type: number, minimum: 0 }
+      responses:
+        '200': { description: OK }
+        '404': { description: Not found }
+    delete:
+      summary: Delete item
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        '204': { description: No content }
+        '404': { description: Not found }
+
