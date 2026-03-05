@@ -1,0 +1,23 @@
+{
+  "name": "rest-api-from-pdfs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "extract-pdfs": "node tools/extract.js",
+    "generate-prompt": "node tools/generatePrompt.js",
+    "build-prompt": "npm run extract-pdfs && npm run generate-prompt",
+    "start:api": "node project/src/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "express-validator": "^7.0.1",
+    "jsonwebtoken": "^9.0.2",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "pdf-parse": "^1.1.1"
+  }
+}

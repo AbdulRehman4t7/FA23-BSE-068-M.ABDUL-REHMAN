@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REST API Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .section {
+            margin-bottom: 40px;
+        }
+        
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        
+        .endpoint h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .method {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.9em;
+        }
+        
+        .method.get { background: #28a745; color: white; }
+        .method.post { background: #007bff; color: white; }
+        .method.put { background: #ffc107; color: #333; }
+        .method.delete { background: #dc3545; color: white; }
+        
+        .url {
+            font-family: 'Courier New', monospace;
+            background: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        
+        .description {
+            margin: 10px 0;
+            color: #666;
+        }
+        
+        .auth-required {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 0.85em;
+            margin-left: 10px;
+        }
+        
+        .example {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+        
+        .example pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .status-codes {
+            margin: 15px 0;
+        }
+        
+        .status-code {
+            display: inline-block;
+            background: #e9ecef;
+            padding: 5px 10px;
+            margin: 5px 5px 5px 0;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+        
+        .note {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        
+        .note strong {
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 REST API Documentation</h1>
+            <p>Complete API Reference for Users, Books, and Items Management</p>
+        </header>
+        
+        <div class="content">
+            <div class="section">
+                <h2>📋 Base URL</h2>
+                <div class="url">http://localhost:3000/api/v1</div>
+            </div>
+
+            <div class="section">
+                <h2>🔐 Authentication</h2>
+                <p>This API uses JWT (JSON Web Token) for authentication. Protected endpoints require a Bearer token in the Authorization header.</p>
+                <div class="example">
+                    <pre>Authorization: Bearer YOUR_JWT_TOKEN_HERE</pre>
+                </div>
+                <div class="note">
+                    <strong>Note:</strong> Get your token by logging in through the <code>/users/login</code> endpoint.
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>👥 Users API</h2>
+                
+                <div class="endpoint">
+                    <h3><span class="method post">POST</span> Register User</h3>
+                    <div class="url">/users</div>
+                    <p class="description">Create a new user account</p>
+                    <div class="example">
+                        <pre>{
+  "name": "Ali Ahmed",
+  "email": "ali@example.com",
+  "password": "securepass123",
+  "department": "Computer Science"
+}</pre>
+                    </div>
+                    <div class="status-codes">
+                        <span class="status-code">201 Created</span>
+                        <span class="status-code">400 Bad Request</span>
+                        <span class="status-code">409 Conflict</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method post">POST</span> Login</h3>
+                    <div class="url">/users/login</div>
+                    <p class="description">Authenticate and receive JWT token</p>
+                    <div class="example">
+                        <pre>{
+  "email": "ali@example.com",
+  "password": "securepass123"
+}</pre>
+                    </div>
+                    <div class="status-codes">
+                        <span class="status-code">200 OK</span>
+                        <span class="status-code">401 Unauthorized</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method get">GET</span> Get All Users</h3>
+                    <div class="url">/users</div>
+                    <p class="description">Retrieve list of all users</p>
+                    <div class="status-codes">
+                        <span class="status-code">200 OK</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method get">GET</span> Get User by ID</h3>
+                    <div class="url">/users/:id</div>
+                    <p class="description">Retrieve a specific user</p>
+                    <div class="status-codes">
+                        <span class="status-code">200 OK</span>
+                        <span class="status-code">404 Not Found</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method put">PUT</span> Update User <span class="auth-required">🔒 Auth Required</span></h3>
+                    <div class="url">/users/:id</div>
+                    <p class="description">Update user profile (own profile only)</p>
+                    <div class="example">
+                        <pre>{
+  "name": "Ali Ahmed Updated",
+  "department": "Software Engineering"
+}</pre>
+                    </div>
+                    <div class="status-codes">
+                        <span class="status-code">200 OK</span>
+                        <span class="status-code">403 Forbidden</span>
+                        <span class="status-code">404 Not Found</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method delete">DELETE</span> Delete User <span class="auth-required">🔒 Auth Required</span></h3>
+                    <div class="url">/users/:id</div>
+                    <p class="description">Delete user account (own account only)</p>
+                    <div class="status-codes">
+                        <span class="status-code">204 No Content</span>
+                        <span class="status-code">403 Forbidden</span>
+                        <span class="status-code">404 Not Found</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📚 Books API</h2>
+                
+                <div class="endpoint">
+                    <h3><span class="method get">GET</span> Get All Books</h3>
+                    <div class="url">/books?page=1&pageSize=10&author=Martin</div>
+                    <p class="description">Retrieve list of books with pagination and filtering</p>
+                    <div class="status-codes">
+                        <span class="status-code">200 OK</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method post">POST</span> Add Book <span class="auth-required">🔒 Auth Required</span></h3>
+                    <div class="url">/books</div>
+                    <p class="description">Add a new book to the collection</p>
+                    <div class="example">
+                        <pre>{
+  "title": "Clean Code",
+  "author": "Robert C. Martin",
+  "price": 500,
+  "isbn": "978-0132350884"
+}</pre>
+                    </div>
+                    <div class="status-codes">
+                        <span class="status-code">201 Created</span>
+                        <span class="status-code">400 Bad Request</span>
+                        <span class="status-code">401 Unauthorized</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method get">GET</span> Get Book by ID</h3>
+                    <div class="url">/books/:id</div>
+                    <p class="description">Retrieve a specific book</p>
+                    <div class="status-codes">
+                        <span class="status-code">200 OK</span>
+                        <span class="status-code">404 Not Found</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method put">PUT</span> Update Book <span class="auth-required">🔒 Auth Required</span></h3>
+                    <div class="url">/books/:id</div>
+                    <p class="description">Update book details</p>
+                    <div class="example">
+                        <pre>{
+  "price": 550,
+  "title": "Clean Code - Updated Edition"
+}</pre>
+                    </div>
+                    <div class="status-codes">
+                        <span class="status-code">200 OK</span>
+                        <span class="status-code">404 Not Found</span>
+                        <span class="status-code">401 Unauthorized</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method delete">DELETE</span> Delete Book <span class="auth-required">🔒 Auth Required</span></h3>
+                    <div class="url">/books/:id</div>
+                    <p class="description">Remove a book from the collection</p>
+                    <div class="status-codes">
+                        <span class="status-code">204 No Content</span>
+                        <span class="status-code">404 Not Found</span>
+                        <span class="status-code">401 Unauthorized</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>📦 Items API</h2>
+                <p>Similar CRUD operations available for Items resource. See existing implementation.</p>
+            </div>
+
+            <div class="section">
+                <h2>🏥 Health Check</h2>
+                
+                <div class="endpoint">
+                    <h3><span class="method get">GET</span> Health Status</h3>
+                    <div class="url">/health</div>
+                    <p class="description">Check API health and uptime</p>
+                    <div class="status-codes">
+                        <span class="status-code">200 OK</span>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <h3><span class="method get">GET</span> Readiness Check</h3>
+                    <div class="url">/health/ready</div>
+                    <p class="description">Check if API is ready to serve requests</p>
+                    <div class="status-codes">
+                        <span class="status-code">200 OK</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>🔒 Security Features</h2>
+                <ul style="line-height: 2;">
+                    <li>✅ <strong>CORS</strong> - Cross-Origin Resource Sharing configured</li>
+                    <li>✅ <strong>Helmet</strong> - Security headers (CSP, HSTS, etc.)</li>
+                    <li>✅ <strong>Rate Limiting</strong> - 500 requests per 15 minutes</li>
+                    <li>✅ <strong>JWT Authentication</strong> - Token-based auth</li>
+                    <li>✅ <strong>Input Validation</strong> - Express-validator</li>
+                    <li>✅ <strong>XSS Protection</strong> - Input sanitization</li>
+                    <li>✅ <strong>Error Handling</strong> - Centralized error responses</li>
+                </ul>
+            </div>
+
+            <div class="section">
+                <h2>📝 Error Response Format</h2>
+                <div class="example">
+                    <pre>{
+  "error": {
+    "message": "Validation failed",
+    "code": "BAD_REQUEST",
+    "details": [...]
+  }
+}</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
