@@ -1,5 +1,61 @@
 # AdFlow Pro 🚀
 **Sponsored Listing Marketplace with Moderation, Scheduling, Payment Verification, Analytics, and External Media Normalization**
+# 📌 Project Outputs Showcase
+
+Welcome to the project outputs section. Below are the visual results of the system:
+
+---
+
+## 🖥️ Screenshots Preview
+
+<table>
+  <tr>
+    <td align="center">
+      <h3>🏠 Home Screen</h3>
+      <img src="https://github.com/user-attachments/assets/be872027-9d0d-4bb5-b8b0-f5f79dc6b87e" width="400"/>
+    </td>
+    <td align="center">
+      <h3>🔐 Login Page</h3>
+      <img src="https://github.com/user-attachments/assets/107d19b5-655a-490a-a192-c8df5cd005de" width="400"/>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      <h3>📋 Dashboard</h3>
+      <img src="https://github.com/user-attachments/assets/61a9888f-5598-4157-ae58-8acb80bc771e" width="400"/>
+    </td>
+    <td align="center">
+      <h3>📦 Product Listing</h3>
+      <img src="https://github.com/user-attachments/assets/435aa151-ad01-4aa2-bb78-8fe85008040a" width="400"/>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      <h3>➕ Add Product</h3>
+      <img src="https://github.com/user-attachments/assets/567e730b-fc4b-4b7e-9804-93fd4e165177" width="400"/>
+    </td>
+    <td align="center">
+      <h3>📊 Reports / Analytics</h3>
+      <img src="https://github.com/user-attachments/assets/f099837e-1035-4064-8012-092ebfb4834f" width="400"/>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 🖥️ 🎯 Final Output
+
+<p align="center">
+  <h3>✅ Final Result</h3>
+  <img src="https://github.com/user-attachments/assets/28b8b8c3-e1fc-4f7a-bd48-43123ea3fa98" width="300"/>
+</p>
+
+
+
+
+
 
 ---
 
