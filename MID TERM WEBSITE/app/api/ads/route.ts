@@ -1,5 +1,30 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { mockListPublishedAds, type MockAd } from '@/lib/mock-db';
+
+function isDemoMode() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return !url || !anon || url.includes('your-supabase-url') || anon.includes('your-anon-key');
+}
+
+function normalizeAdForClient(ad: MockAd) {
+  return {
+    id: ad.id,
+    slug: ad.slug,
+    title: ad.title,
+    description: ad.description,
+    price: ad.price,
+    status: ad.status.toUpperCase(),
+    cities: ad.city,
+    categories: ad.category,
+    packages: { ...ad.package, name: ad.package.name },
+    is_featured: ad.is_featured,
+    publish_at: ad.publish_at,
+    expire_at: ad.expire_at,
+    ad_media: ad.ad_media,
+  };
+}
 
 export async function GET(req: Request) {
   try {
@@ -7,13 +32,19 @@ export async function GET(req: Request) {
     const category = searchParams.get('category');
     const city = searchParams.get('city');
 
+    if (isDemoMode()) {
+      const ads = mockListPublishedAds({ category, city }).map(normalizeAdForClient);
+      return NextResponse.json({ ads }, { status: 200 });
+    }
+
     let query = supabase
       .from('ads')
       .select(`
         *,
         categories!inner(id, name, slug),
         cities!inner(id, name, slug),
-        packages!inner(id, name, weight, is_featured)
+        packages!inner(id, name, weight, is_featured),
+        ad_media(*)
       `)
       .eq('status', 'PUBLISHED');
 

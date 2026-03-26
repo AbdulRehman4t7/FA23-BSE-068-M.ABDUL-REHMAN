@@ -6,6 +6,7 @@ import { Footer } from "@/components/footer"
 import { AdCard, type Ad } from "@/components/ad-card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { CATEGORIES, PAKISTAN_CITIES } from "@/lib/constants"
 import {
   Select,
   SelectContent,
@@ -139,7 +140,7 @@ const sampleAds: Ad[] = [
   },
 ]
 
-function FilterSidebar() {
+function FilterSidebar(props: any) {
   return (
     <div className="space-y-6">
       <div>
@@ -214,16 +215,18 @@ export default function ExplorePage() {
         const data = await res.json()
         if (data.ads && data.ads.length > 0) {
           const formattedAds: Ad[] = data.ads.map((ad: any) => ({
-            id: ad.id,
+            id: ad.slug ?? ad.id,
+            slug: ad.slug ?? ad.id,
             title: ad.title,
             description: ad.description,
-            price: 'Ref: ' + ad.id.substring(0, 8),
+            price: ad.price ?? 0,
+            status: String(ad.status ?? 'PUBLISHED').toLowerCase(),
+            is_featured: ad.is_featured ?? ad.packages?.is_featured ?? false,
             city: ad.cities?.name || 'Unknown',
             category: ad.categories?.name || 'Unknown',
             package: ad.packages?.name?.toLowerCase() || 'basic',
-            image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop", 
-            expiresAt: new Date(ad.expire_at).toLocaleDateString(),
-            seller: { name: 'Verified Seller', verified: true },
+            media: (ad.ad_media || []).map((m: any) => ({ thumbnail_url: m.thumbnail_url ?? m.original_url })),
+            image: ad.ad_media?.[0]?.thumbnail_url ?? ad.ad_media?.[0]?.original_url,
           }))
           setAdsList(formattedAds)
         }

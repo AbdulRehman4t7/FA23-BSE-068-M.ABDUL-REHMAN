@@ -35,18 +35,17 @@ const categories = [
   "Jobs",
   "Fashion",
   "Collectibles",
-  "Other",
 ]
 
 const cities = [
-  "New York",
-  "Los Angeles",
-  "Chicago",
-  "Houston",
-  "Miami",
-  "San Francisco",
-  "Seattle",
-  "Other",
+  "Karachi",
+  "Lahore",
+  "Islamabad",
+  "Rawalpindi",
+  "Faisalabad",
+  "Multan",
+  "Peshawar",
+  "Quetta",
 ]
 
 const packages = [
@@ -76,6 +75,14 @@ const packages = [
 
 type Step = 1 | 2 | 3 | 4
 
+function toSlug(input: string) {
+  return input
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+}
+
 export default function NewAdPage() {
   const router = useRouter()
   const [step, setStep] = useState<Step>(1)
@@ -90,6 +97,7 @@ export default function NewAdPage() {
     transactionId: "",
     senderName: "",
     amount: "",
+    screenshotUrl: "",
   })
 
   const updateFormData = (field: string, value: string) => {
@@ -98,9 +106,54 @@ export default function NewAdPage() {
 
   const handleSubmit = async () => {
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 2000))
-    setIsSubmitting(false)
-    router.push("/dashboard/ads")
+    try {
+      const mediaUrls = formData.mediaUrl
+        .split(/[,\\n]/g)
+        .map((s) => s.trim())
+        .filter(Boolean)
+
+      const adRes = await fetch("/api/client/ads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          category_id: formData.category,
+          city_id: formData.city,
+          package_id: formData.package,
+          mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
+        }),
+      })
+
+      const adJson = await adRes.json()
+      if (!adRes.ok) throw new Error(adJson?.error || "Failed to create ad")
+
+      const adId = adJson.adId
+      if (!adId) throw new Error("Ad id missing from response")
+
+      const payRes = await fetch("/api/client/payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ad_id: String(adId),
+          amount: formData.amount,
+          method: "BANK_TRANSFER",
+          transaction_ref: formData.transactionId,
+          sender_name: formData.senderName,
+          screenshot_url: formData.screenshotUrl ? formData.screenshotUrl : undefined,
+        }),
+      })
+
+      const payJson = await payRes.json()
+      if (!payRes.ok) throw new Error(payJson?.error || "Failed to submit payment")
+
+      router.push("/dashboard/ads")
+    } catch (err) {
+      console.error("Ad submit error:", err)
+      alert("Failed to submit ad. Check console for details.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -196,7 +249,7 @@ export default function NewAdPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((cat) => (
-                        <SelectItem key={cat} value={cat.toLowerCase()}>
+                        <SelectItem key={cat} value={`cat-${toSlug(cat)}`}>
                           {cat}
                         </SelectItem>
                       ))}
@@ -214,7 +267,7 @@ export default function NewAdPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {cities.map((city) => (
-                        <SelectItem key={city} value={city.toLowerCase()}>
+                        <SelectItem key={city} value={`city-${toSlug(city)}`}>
                           {city}
                         </SelectItem>
                       ))}
@@ -396,6 +449,11 @@ export default function NewAdPage() {
                     Upload payment confirmation screenshot
                   </p>
                 </div>
+                <Input
+                  placeholder="Or paste screenshot URL (optional)"
+                  value={formData.screenshotUrl}
+                  onChange={(e) => updateFormData("screenshotUrl", e.target.value)}
+                />
               </div>
               <div className="flex justify-between">
                 <Button variant="outline" onClick={() => setStep(3)}>

@@ -1,9 +1,40 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { withAuth, UserSession } from '@/lib/auth';
+import { mockListClientDashboard } from '@/lib/mock-db';
+
+function isDemoMode() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return !url || !anon || url.includes('your-supabase-url') || anon.includes('your-anon-key');
+}
 
 export const GET = withAuth(async (req: Request, user: UserSession) => {
   try {
+    if (isDemoMode()) {
+      const mock = mockListClientDashboard({ user_id: user.id });
+      const ads = mock.ads.map((ad: any) => ({
+        ...ad,
+        status: ad.status.toUpperCase(),
+        packages: {
+          name: ad.package.name,
+          duration_days: ad.package.duration_days,
+          weight: ad.package.weight,
+          is_featured: ad.package.is_featured,
+        },
+        categories: ad.category,
+        cities: ad.city,
+      }));
+
+      // Return profile in a shape compatible with the frontend
+      const profile = {
+        ...mock.profile,
+        display_name: mock.profile.display_name,
+      };
+
+      return NextResponse.json({ ads, profile, stats: mock.stats }, { status: 200 });
+    }
+
     const { data: ads, error } = await supabase
       .from('ads')
       .select('*, packages(name, duration_days), categories(name), cities(name)')

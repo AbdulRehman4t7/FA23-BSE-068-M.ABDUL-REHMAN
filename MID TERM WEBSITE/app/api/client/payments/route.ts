@@ -2,11 +2,35 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { withAuth, UserSession } from '@/lib/auth';
 import { submitPaymentSchema } from '@/lib/validations/payment';
+import { mockSubmitPayment } from '@/lib/mock-db';
+
+function isDemoMode() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return !url || !anon || url.includes('your-supabase-url') || anon.includes('your-anon-key');
+}
 
 export const POST = withAuth(async (req: Request, user: UserSession) => {
   try {
     const body = await req.json();
     const validatedData = submitPaymentSchema.parse(body);
+
+    if (isDemoMode()) {
+      const adIdNum = Number(validatedData.ad_id);
+      const result = mockSubmitPayment({
+        ad_id: adIdNum,
+        amount: validatedData.amount,
+        method: validatedData.method,
+        transaction_ref: validatedData.transaction_ref,
+        sender_name: validatedData.sender_name,
+        screenshot_url: validatedData.screenshot_url,
+        user_id: user.id,
+      });
+      if (!result.ok) {
+        return NextResponse.json({ error: result.error }, { status: 400 });
+      }
+      return NextResponse.json({ message: 'Payment submitted successfully' }, { status: 201 });
+    }
 
     // Verify Ad ownership
     const { data: ad, error: adError } = await supabase

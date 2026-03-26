@@ -3,17 +3,43 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { StatusBadge } from "@/components/status-badge"
 import { PackageBadge } from "@/components/package-badge"
 
+import type { AdStatus } from "@/components/status-badge"
+
+export type Ad = {
+  id: string | number
+  slug?: string
+  title: string
+  description: string
+  price?: number | string
+  status?: AdStatus
+  is_featured?: boolean
+  media?: Array<{ thumbnail_url?: string | null }>
+  image?: string
+  city?: { name?: string | null } | string
+  category?: { name?: string | null } | string
+  package?: { name?: string | null } | string
+}
+
 interface AdCardProps {
-  ad: any // Replace with proper type
+  ad: Ad
 }
 
 export function AdCard({ ad }: AdCardProps) {
+  const thumbnailSrc =
+    ad.media?.[0]?.thumbnail_url ?? (typeof ad.image === "string" ? ad.image : undefined)
+  const status = ad.status ?? "published"
+  const cityName = typeof ad.city === "string" ? ad.city : ad.city?.name
+  const categoryName =
+    typeof ad.category === "string" ? ad.category : ad.category?.name
+  const packageName = typeof ad.package === "string" ? ad.package : ad.package?.name
+  const packageType = (packageName?.toLowerCase?.() ?? "basic") as any
+
   return (
     <Card className="overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
       <div className="aspect-video relative bg-slate-100">
-        {ad.media?.[0]?.thumbnail_url ? (
+        {thumbnailSrc ? (
           <img
-            src={ad.media[0].thumbnail_url}
+            src={thumbnailSrc}
             alt={ad.title}
             className="object-cover w-full h-full"
           />
@@ -24,7 +50,7 @@ export function AdCard({ ad }: AdCardProps) {
           {ad.is_featured && (
             <span className="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold uppercase">Featured</span>
           )}
-          <StatusBadge status={ad.status} className="bg-white/90 backdrop-blur-sm shadow-sm" />
+          <StatusBadge status={status} className="bg-white/90 backdrop-blur-sm shadow-sm" />
         </div>
       </div>
       <CardHeader className="p-4 pb-2">
@@ -33,17 +59,17 @@ export function AdCard({ ad }: AdCardProps) {
           <span className="font-bold text-primary shrink-0">PKR {ad.price?.toLocaleString() || 'N/A'}</span>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-          <span>{ad.city?.name || 'Anywhere'}</span>
+          <span>{cityName || 'Anywhere'}</span>
           <span>•</span>
-          <span>{ad.category?.name || 'Uncategorized'}</span>
+          <span>{categoryName || 'Uncategorized'}</span>
         </div>
       </CardHeader>
       <CardContent className="p-4 pt-0 flex-1">
         <p className="text-sm text-muted-foreground line-clamp-2">{ad.description}</p>
       </CardContent>
       <CardFooter className="p-4 pt-0 flex justify-between items-center border-t mt-auto">
-        <PackageBadge type={ad.package?.name?.toLowerCase() || 'basic'} />
-        <Link href={`/ads/${ad.id}`} className="text-primary text-sm font-medium hover:underline">
+        <PackageBadge type={packageType || 'basic'} />
+        <Link href={`/ads/${ad.slug ?? ad.id}`} className="text-primary text-sm font-medium hover:underline">
           View Details →
         </Link>
       </CardFooter>
