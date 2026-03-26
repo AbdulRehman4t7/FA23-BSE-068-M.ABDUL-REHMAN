@@ -43,12 +43,8 @@ Welcome to the project outputs section. Below are the visual results of the syst
   </tr>
 </table>
 
----
-
-## 🖥️ 🎯 Final Output
-
 <p align="center">
-  <h3>✅ Final Result</h3>
+  <h3>Create ads</h3>
   <img src="https://github.com/user-attachments/assets/28b8b8c3-e1fc-4f7a-bd48-43123ea3fa98" width="300"/>
 </p>
 
