@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
+import DashboardLayout from "@/components/dashboard/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import {
