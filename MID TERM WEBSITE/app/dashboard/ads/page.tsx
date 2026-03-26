@@ -135,9 +135,6 @@ export default function AdsPage() {
         const headers: Record<string, string> = { "Content-Type": "application/json" }
         if (token) headers.Authorization = `Bearer ${token}`
 
-        const res = await fetch("/api/client/dashboard", { headers })
-        if (!res.ok) return
-        const json = await res.json()
         const localRaw = (() => {
           try {
             return JSON.parse(localStorage.getItem("demo_ads_v1") || "[]")
@@ -164,6 +161,14 @@ export default function AdsPage() {
               city: ad.city?.name || ad.city || "",
             }))
           : []
+
+        const res = await fetch("/api/client/dashboard", { headers })
+        if (!res.ok) {
+          setAdsList(localMapped)
+          return
+        }
+
+        const json = await res.json()
 
         if (!json?.ads) {
           setAdsList(localMapped)
