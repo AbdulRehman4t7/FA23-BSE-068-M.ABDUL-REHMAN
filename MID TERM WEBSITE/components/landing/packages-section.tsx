@@ -20,10 +20,10 @@ export function PackagesSection() {
       </div>
       <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3 pt-12">
         {packages.map((pkg) => (
-          <Card key={pkg.name} className="flex flex-col justify-between">
+          <Card key={pkg.name} className="flex flex-col justify-between border-t-4 border-t-primary/80">
             <CardHeader>
               <CardTitle className="text-2xl">{pkg.name}</CardTitle>
-              <div className="text-3xl font-bold">PKR {pkg.price}</div>
+              <div className="font-heading text-3xl font-bold">PKR {pkg.price}</div>
             </CardHeader>
             <CardContent>
               <ul className="grid gap-2 text-sm text-muted-foreground">

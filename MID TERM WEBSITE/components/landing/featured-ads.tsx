@@ -13,7 +13,7 @@ export function FeaturedAds() {
       </div>
       <div className="mx-auto grid justify-center gap-4 sm:grid-cols-2 md:max-w-[64rem] md:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="flex flex-col justify-between">
+          <Card key={i} className="flex flex-col justify-between border-l-4 border-l-primary/70">
             <CardHeader>
               <CardTitle className="text-xl">Sample Featured Ad {i}</CardTitle>
             </CardHeader>
