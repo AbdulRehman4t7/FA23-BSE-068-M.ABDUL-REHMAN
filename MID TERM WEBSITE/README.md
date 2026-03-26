@@ -15,14 +15,14 @@ Welcome to the project outputs section. Below are the visual results of the syst
       <img src="https://github.com/user-attachments/assets/be872027-9d0d-4bb5-b8b0-f5f79dc6b87e" width="400"/>
     </td>
     <td align="center">
-      <h3>🔐 Login Page</h3>
+      <h3>DASHBOARD</h3>
       <img src="https://github.com/user-attachments/assets/107d19b5-655a-490a-a192-c8df5cd005de" width="400"/>
     </td>
   </tr>
 
   <tr>
     <td align="center">
-      <h3>📋 Dashboard</h3>
+      <h3>🔐 Login Page</h3>
       <img src="https://github.com/user-attachments/assets/61a9888f-5598-4157-ae58-8acb80bc771e" width="400"/>
     </td>
     <td align="center">
