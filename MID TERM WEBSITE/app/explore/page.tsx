@@ -228,10 +228,27 @@ export default function ExplorePage() {
             media: (ad.ad_media || []).map((m: any) => ({ thumbnail_url: m.thumbnail_url ?? m.original_url })),
             image: ad.ad_media?.[0]?.thumbnail_url ?? ad.ad_media?.[0]?.original_url,
           }))
-          setAdsList(formattedAds)
+          const localAdsRaw = (() => {
+            try {
+              return JSON.parse(localStorage.getItem("demo_ads_v1") || "[]")
+            } catch {
+              return []
+            }
+          })()
+          const localAds = Array.isArray(localAdsRaw) ? (localAdsRaw as Ad[]) : []
+          setAdsList([...formattedAds, ...localAds])
         }
       } catch (e) {
         console.error("Failed to fetch ads, falling back to samples.", e)
+        const localAdsRaw = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("demo_ads_v1") || "[]")
+          } catch {
+            return []
+          }
+        })()
+        const localAds = Array.isArray(localAdsRaw) ? (localAdsRaw as Ad[]) : []
+        setAdsList([...sampleAds, ...localAds])
       } finally {
         setLoading(false)
       }

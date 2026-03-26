@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
+import DashboardLayout from "@/components/dashboard/dashboard-layout"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -125,8 +125,81 @@ const ads: Ad[] = [
 export default function AdsPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [adsList, setAdsList] = useState<Ad[]>(ads)
+  const [loading, setLoading] = useState(true)
 
-  const filteredAds = ads.filter((ad) => {
+  useEffect(() => {
+    async function fetchDashboardAds() {
+      try {
+        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null
+        const headers: Record<string, string> = { "Content-Type": "application/json" }
+        if (token) headers.Authorization = `Bearer ${token}`
+
+        const res = await fetch("/api/client/dashboard", { headers })
+        if (!res.ok) return
+        const json = await res.json()
+        const localRaw = (() => {
+          try {
+            return JSON.parse(localStorage.getItem("demo_ads_v1") || "[]")
+          } catch {
+            return []
+          }
+        })()
+
+        const localMapped = Array.isArray(localRaw)
+          ? localRaw.map((ad: any) => ({
+              id: ad.id,
+              title: ad.title,
+              status: String(ad.status || "published").toLowerCase() as AdStatus,
+              package: (typeof ad.package?.name === "string"
+                ? ad.package.name.toLowerCase()
+                : typeof ad.package === "string"
+                  ? ad.package.toLowerCase()
+                  : "basic") as PackageType,
+              views: ad.views ?? 0,
+              createdAt: ad.createdAt ?? "-",
+              expiresAt: ad.expiresAt ?? "-",
+              image: ad.media?.[0]?.thumbnail_url || ad.image || "",
+              category: ad.category?.name || ad.category || "",
+              city: ad.city?.name || ad.city || "",
+            }))
+          : []
+
+        if (!json?.ads) {
+          setAdsList(localMapped)
+          return
+        }
+
+        const apiMapped = (json.ads as any[]).map((ad) => ({
+          id: ad.id,
+          title: ad.title,
+          status: String(ad.status || "draft").toLowerCase() as AdStatus,
+          package: (ad.packages?.name?.toLowerCase() ||
+            ad.packages?.id?.toLowerCase() ||
+            "basic") as PackageType,
+          views: ad.views ?? 0,
+          createdAt: ad.created_at ? new Date(ad.created_at).toLocaleDateString() : "-",
+          expiresAt: ad.expire_at ? new Date(ad.expire_at).toLocaleDateString() : "-",
+          image:
+            ad.ad_media?.[0]?.thumbnail_url ||
+            ad.ad_media?.[0]?.original_url ||
+            ad.image ||
+            "",
+          category: ad.categories?.name || ad.category || "",
+          city: ad.cities?.name || ad.city || "",
+        }))
+
+        setAdsList([...apiMapped, ...localMapped])
+      } catch (e) {
+        console.error("Failed to fetch dashboard ads", e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDashboardAds()
+  }, [])
+
+  const filteredAds = adsList.filter((ad) => {
     const matchesSearch = ad.title.toLowerCase().includes(searchQuery.toLowerCase())
     const matchesStatus = statusFilter === "all" || ad.status === statusFilter
     return matchesSearch && matchesStatus
@@ -179,6 +252,13 @@ export default function AdsPage() {
 
         {/* Ads List */}
         <div className="space-y-4">
+          {loading && (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12 gap-2">
+                <p className="text-lg font-medium">Loading ads...</p>
+              </CardContent>
+            </Card>
+          )}
           {filteredAds.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-12">

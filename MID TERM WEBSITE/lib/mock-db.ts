@@ -251,6 +251,11 @@ function initialState(): MockDbState {
     },
   ]
 
+  // Seed demo ownership so dashboard screens show example listings immediately.
+  ads.forEach((ad) => {
+    ;(ad as any).user_id = 'demo-user'
+  })
+
   return { categories, cities, packages, ads, payments: [] }
 }
 

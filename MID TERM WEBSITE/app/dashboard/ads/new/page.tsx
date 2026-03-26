@@ -3,7 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { DashboardLayout } from "@/components/dashboard/dashboard-layout"
+import DashboardLayout from "@/components/dashboard/dashboard-layout"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -107,46 +107,47 @@ export default function NewAdPage() {
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
+      const title = formData.title.trim()
+      const description = formData.description.trim()
+
       const mediaUrls = formData.mediaUrl
         .split(/[,\\n]/g)
         .map((s) => s.trim())
         .filter(Boolean)
 
-      const adRes = await fetch("/api/client/ads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: formData.title,
-          description: formData.description,
-          category_id: formData.category,
-          city_id: formData.city,
-          package_id: formData.package,
-          mediaUrls: mediaUrls.length > 0 ? mediaUrls : undefined,
-        }),
-      })
+      const categoryName =
+        categories.find((cat) => `cat-${toSlug(cat)}` === formData.category) ?? categories[0]
+      const cityName =
+        cities.find((city) => `city-${toSlug(city)}` === formData.city) ?? cities[0]
 
-      const adJson = await adRes.json()
-      if (!adRes.ok) throw new Error(adJson?.error || "Failed to create ad")
+      const pkg = packages.find((p) => p.id === formData.package) ?? packages[1]
+      const priceNum = pkg.id === "basic" ? 0 : pkg.id === "standard" ? 500 : 1500
+      const isFeatured = pkg.id === "premium"
 
-      const adId = adJson.adId
-      if (!adId) throw new Error("Ad id missing from response")
+      const mainImage =
+        mediaUrls[0] ||
+        "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=800&h=600&fit=crop"
 
-      const payRes = await fetch("/api/client/payments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ad_id: String(adId),
-          amount: formData.amount,
-          method: "BANK_TRANSFER",
-          transaction_ref: formData.transactionId,
-          sender_name: formData.senderName,
-          screenshot_url: formData.screenshotUrl ? formData.screenshotUrl : undefined,
-        }),
-      })
+      const localKey = "demo_ads_v1"
+      const existing = JSON.parse(localStorage.getItem(localKey) || "[]") as any[]
+      const nextId = existing.length > 0 ? Math.max(...existing.map((a) => a.id || 0)) + 1 : 1000
+      const slug = `${toSlug(title)}-${nextId}`
 
-      const payJson = await payRes.json()
-      if (!payRes.ok) throw new Error(payJson?.error || "Failed to submit payment")
+      const newAd = {
+        id: nextId,
+        slug,
+        title,
+        description,
+        price: priceNum,
+        status: "published",
+        is_featured: isFeatured,
+        city: { name: cityName },
+        category: { name: categoryName },
+        package: { name: pkg.id },
+        media: [{ thumbnail_url: mainImage }],
+      }
 
+      localStorage.setItem(localKey, JSON.stringify([...existing, newAd]))
       router.push("/dashboard/ads")
     } catch (err) {
       console.error("Ad submit error:", err)
