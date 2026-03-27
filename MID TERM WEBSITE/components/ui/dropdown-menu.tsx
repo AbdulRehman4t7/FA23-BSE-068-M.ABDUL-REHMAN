@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
 import { cn } from "@/lib/utils"
 
 const DropdownMenu = ({ children }: { children: React.ReactNode }) => (
@@ -11,20 +12,23 @@ const DropdownMenu = ({ children }: { children: React.ReactNode }) => (
 
 const DropdownMenuTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ className, ...props }, ref) => (
-  <button
-    ref={ref}
-    className={cn("inline-flex w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2", className)}
-    {...props}
-  />
-))
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "button"
+  return (
+    <Comp
+      ref={ref}
+      className={cn("inline-flex w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2", className)}
+      {...props}
+    />
+  )
+})
 DropdownMenuTrigger.displayName = "DropdownMenuTrigger"
 
 const DropdownMenuContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { align?: string }
+>(({ className, align: _align, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
@@ -38,17 +42,20 @@ DropdownMenuContent.displayName = "DropdownMenuContent"
 
 const DropdownMenuItem = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer",
-      className
-    )}
-    {...props}
-  />
-))
+  React.HTMLAttributes<HTMLDivElement> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "div"
+  return (
+    <Comp
+      ref={ref}
+      className={cn(
+        "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer",
+        className
+      )}
+      {...props}
+    />
+  )
+})
 DropdownMenuItem.displayName = "DropdownMenuItem"
 
 const DropdownMenuSeparator = ({ className }: { className?: string }) => (

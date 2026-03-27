@@ -13,6 +13,8 @@ export type Ad = {
   price?: number | string
   status?: AdStatus
   is_featured?: boolean
+  expiresAt?: string
+  seller?: { name?: string; verified?: boolean }
   media?: Array<{ thumbnail_url?: string | null }>
   image?: string
   city?: { name?: string | null } | string

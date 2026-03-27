@@ -1,379 +1,144 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { AdCard, type Ad } from "@/components/ad-card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { CATEGORIES, PAKISTAN_CITIES } from "@/lib/constants"
+import { useEffect, useMemo, useState } from "react";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { AdCard, type Ad } from "@/components/ad-card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
-import { Search, SlidersHorizontal, Grid3X3, List, ChevronLeft, ChevronRight } from "lucide-react"
-
-const categories = [
-  "All Categories",
-  "Real Estate",
-  "Vehicles",
-  "Electronics",
-  "Services",
-  "Jobs",
-  "Fashion",
-  "Collectibles",
-]
-
-const cities = [
-  "All Cities",
-  "New York",
-  "Los Angeles",
-  "Chicago",
-  "Houston",
-  "Miami",
-  "San Francisco",
-  "Seattle",
-]
-
-const sampleAds: Ad[] = [
-  {
-    id: 1,
-    title: "Premium Office Space Downtown",
-    description: "Modern office space with stunning city views.",
-    price: "$2,500/mo",
-    city: "New York",
-    category: "Real Estate",
-    package: "premium",
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&h=300&fit=crop",
-    expiresAt: "25 days",
-    seller: { name: "Metro Realty", verified: true },
-  },
-  {
-    id: 2,
-    title: "2023 Tesla Model S",
-    description: "Like new condition, full self-driving capability.",
-    price: "$89,999",
-    city: "Los Angeles",
-    category: "Vehicles",
-    package: "premium",
-    image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=400&h=300&fit=crop",
-    expiresAt: "20 days",
-    seller: { name: "EliteCars", verified: true },
-  },
-  {
-    id: 3,
-    title: "Professional Photography Services",
-    description: "Wedding, events, and portrait photography.",
-    price: "$150/hr",
-    city: "Chicago",
-    category: "Services",
-    package: "standard",
-    image: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=400&h=300&fit=crop",
-    expiresAt: "10 days",
-    seller: { name: "PhotoPro", verified: true },
-  },
-  {
-    id: 4,
-    title: "Vintage Watch Collection",
-    description: "Rare Rolex and Omega pieces from the 1960s.",
-    price: "$12,500",
-    city: "Miami",
-    category: "Collectibles",
-    package: "premium",
-    image: "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=400&h=300&fit=crop",
-    expiresAt: "28 days",
-    seller: { name: "TimelessPieces", verified: true },
-  },
-  {
-    id: 5,
-    title: "Luxury Apartment for Rent",
-    description: "2BR/2BA with modern amenities and parking.",
-    price: "$4,200/mo",
-    city: "San Francisco",
-    category: "Real Estate",
-    package: "standard",
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=400&h=300&fit=crop",
-    expiresAt: "12 days",
-    seller: { name: "BayRentals", verified: false },
-  },
-  {
-    id: 6,
-    title: "MacBook Pro 16\" M3 Max",
-    description: "Brand new, sealed box, with AppleCare+.",
-    price: "$3,299",
-    city: "Seattle",
-    category: "Electronics",
-    package: "basic",
-    image: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&h=300&fit=crop",
-    expiresAt: "5 days",
-    seller: { name: "TechDeals", verified: true },
-  },
-  {
-    id: 7,
-    title: "Senior Software Engineer",
-    description: "Remote position at a leading fintech startup.",
-    price: "$180k-$220k",
-    city: "New York",
-    category: "Jobs",
-    package: "premium",
-    image: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400&h=300&fit=crop",
-    expiresAt: "18 days",
-    seller: { name: "TechCorp", verified: true },
-  },
-  {
-    id: 8,
-    title: "Designer Handbag Collection",
-    description: "Authentic Chanel, Louis Vuitton, and Hermes.",
-    price: "$5,000-$15,000",
-    city: "Los Angeles",
-    category: "Fashion",
-    package: "standard",
-    image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=400&h=300&fit=crop",
-    expiresAt: "8 days",
-    seller: { name: "LuxuryConsign", verified: true },
-  },
-]
-
-function FilterSidebar(props: any) {
-  return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="mb-3 font-semibold">Category</h3>
-        <div className="space-y-2">
-          {categories.map((category) => (
-            <div key={category} className="flex items-center space-x-2">
-              <Checkbox id={`category-${category}`} />
-              <Label
-                htmlFor={`category-${category}`}
-                className="text-sm font-normal"
-              >
-                {category}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="mb-3 font-semibold">City</h3>
-        <div className="space-y-2">
-          {cities.map((city) => (
-            <div key={city} className="flex items-center space-x-2">
-              <Checkbox id={`city-${city}`} />
-              <Label htmlFor={`city-${city}`} className="text-sm font-normal">
-                {city}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <h3 className="mb-3 font-semibold">Price Range</h3>
-        <div className="flex items-center gap-2">
-          <Input placeholder="Min" className="w-24" />
-          <span className="text-muted-foreground">-</span>
-          <Input placeholder="Max" className="w-24" />
-        </div>
-      </div>
-
-      <div>
-        <h3 className="mb-3 font-semibold">Package</h3>
-        <div className="space-y-2">
-          {["Basic", "Standard", "Premium"].map((pkg) => (
-            <div key={pkg} className="flex items-center space-x-2">
-              <Checkbox id={`package-${pkg}`} />
-              <Label htmlFor={`package-${pkg}`} className="text-sm font-normal">
-                {pkg}
-              </Label>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <Button className="w-full">Apply Filters</Button>
-    </div>
-  )
-}
+} from "@/components/ui/select";
+import { CATEGORIES, PAKISTAN_CITIES } from "@/lib/constants";
+import { Grid3X3, List, Search, SlidersHorizontal } from "lucide-react";
 
 export default function ExplorePage() {
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [adsList, setAdsList] = useState<Ad[]>(sampleAds)
-  const [loading, setLoading] = useState(true)
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [category, setCategory] = useState("all");
+  const [city, setCity] = useState("all");
+  const [sortBy, setSortBy] = useState("rank");
+  const [adsList, setAdsList] = useState<Ad[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchAds() {
+      setLoading(true);
       try {
-        const res = await fetch('/api/ads')
-        if (!res.ok) throw new Error()
-        const data = await res.json()
-        if (data.ads && data.ads.length > 0) {
-          const formattedAds: Ad[] = data.ads.map((ad: any) => ({
-            id: ad.slug ?? ad.id,
-            slug: ad.slug ?? ad.id,
-            title: ad.title,
-            description: ad.description,
-            price: ad.price ?? 0,
-            status: String(ad.status ?? 'PUBLISHED').toLowerCase(),
-            is_featured: ad.is_featured ?? ad.packages?.is_featured ?? false,
-            city: ad.cities?.name || 'Unknown',
-            category: ad.categories?.name || 'Unknown',
-            package: ad.packages?.name?.toLowerCase() || 'basic',
-            media: (ad.ad_media || []).map((m: any) => ({ thumbnail_url: m.thumbnail_url ?? m.original_url })),
-            image: ad.ad_media?.[0]?.thumbnail_url ?? ad.ad_media?.[0]?.original_url,
-          }))
-          const localAdsRaw = (() => {
-            try {
-              return JSON.parse(localStorage.getItem("demo_ads_v1") || "[]")
-            } catch {
-              return []
-            }
-          })()
-          const localAds = Array.isArray(localAdsRaw) ? (localAdsRaw as Ad[]) : []
-          setAdsList([...formattedAds, ...localAds])
-        }
-      } catch (e) {
-        console.error("Failed to fetch ads, falling back to samples.", e)
-        const localAdsRaw = (() => {
-          try {
-            return JSON.parse(localStorage.getItem("demo_ads_v1") || "[]")
-          } catch {
-            return []
-          }
-        })()
-        const localAds = Array.isArray(localAdsRaw) ? (localAdsRaw as Ad[]) : []
-        setAdsList([...sampleAds, ...localAds])
+        const params = new URLSearchParams();
+        if (category !== "all") params.set("category", category);
+        if (city !== "all") params.set("city", city);
+        if (searchTerm.trim()) params.set("search", searchTerm.trim());
+        const res = await fetch(`/api/ads?${params.toString()}`);
+        const data = await res.json();
+        const mapped = (data.ads || []).map((ad: any) => ({
+          id: ad.id,
+          slug: ad.slug,
+          title: ad.title,
+          description: ad.description,
+          price: ad.price,
+          status: String(ad.status || "published").toLowerCase(),
+          is_featured: ad.is_featured,
+          city: ad.cities?.name || ad.city?.name || ad.city,
+          category: ad.categories?.name || ad.category?.name || ad.category,
+          package: ad.packages?.name?.toLowerCase() || "basic",
+          media: ad.ad_media,
+          seller: {
+            name: ad.seller_profiles?.business_name || "Verified seller",
+            verified: ad.seller_profiles?.is_verified ?? false,
+          },
+        }));
+        setAdsList(mapped);
+      } catch (_error) {
+        setAdsList([]);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    fetchAds()
-  }, [])
+    fetchAds();
+  }, [searchTerm, category, city]);
 
+  const visibleAds = useMemo(() => {
+    const list = [...adsList];
+    if (sortBy === "price-low") list.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
+    if (sortBy === "price-high") list.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
+    if (sortBy === "featured") list.sort((a, b) => Number(Boolean(b.is_featured)) - Number(Boolean(a.is_featured)));
+    return list;
+  }, [adsList, sortBy]);
 
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight">Explore Ads</h1>
-            <p className="mt-2 text-muted-foreground">
-              Discover verified listings from trusted sellers
-            </p>
+        <section className="border-b border-border bg-muted/30">
+          <div className="mx-auto max-w-7xl px-4 py-14">
+            <h1 className="text-4xl font-bold">Explore Sponsored Listings</h1>
+            <p className="mt-3 max-w-2xl text-muted-foreground">Search active ads only. Results prioritize featured inventory, package strength, freshness, admin boost, and verified sellers.</p>
           </div>
+        </section>
 
-          {/* Search and filters bar */}
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="relative flex-1 sm:max-w-md">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search listings..."
-                className="pl-10"
-              />
-            </div>
-            <div className="flex items-center gap-3">
-              <Select defaultValue="newest">
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
+        <div className="mx-auto max-w-7xl px-4 py-8">
+          <div className="rounded-3xl border border-border bg-card p-4 shadow-sm">
+            <div className="grid gap-4 lg:grid-cols-[2fr_1fr_1fr_1fr_auto]">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search ads, sellers, categories..." className="pl-10" />
+              </div>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="newest">Newest First</SelectItem>
-                  <SelectItem value="featured">Featured</SelectItem>
-                  <SelectItem value="price-low">Price: Low to High</SelectItem>
-                  <SelectItem value="price-high">Price: High to Low</SelectItem>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {CATEGORIES.map((item) => <SelectItem key={item.slug} value={item.slug}>{item.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-              
-              <div className="hidden items-center rounded-lg border border-input p-1 md:flex">
-                <Button
-                  variant={viewMode === "grid" ? "secondary" : "ghost"}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode("grid")}
-                >
-                  <Grid3X3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === "list" ? "secondary" : "ghost"}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode("list")}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
-
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" className="lg:hidden">
-                    <SlidersHorizontal className="mr-2 h-4 w-4" />
-                    Filters
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left">
-                  <SheetHeader>
-                    <SheetTitle>Filters</SheetTitle>
-                  </SheetHeader>
-                  <div className="mt-6">
-                    <FilterSidebar />
-                  </div>
-                </SheetContent>
-              </Sheet>
-            </div>
-          </div>
-
-          <div className="flex gap-8">
-            {/* Sidebar - Desktop */}
-            <aside className="hidden w-64 shrink-0 lg:block">
-              <div className="sticky top-24 rounded-xl border border-border bg-card p-6">
-                <h2 className="mb-4 font-semibold">Filters</h2>
-                <FilterSidebar />
-              </div>
-            </aside>
-
-            {/* Main content */}
-            <div className="flex-1">
-              <div className="mb-4 text-sm text-muted-foreground">
-                Showing {adsList.length} results {loading && "(Loading...)"}
-              </div>
-
-              <div className={
-                viewMode === "grid"
-                  ? "grid gap-6 sm:grid-cols-2 xl:grid-cols-3"
-                  : "space-y-4"
-              }>
-                {adsList.map((ad) => (
-                  <AdCard key={ad.id} ad={ad} />
-                ))}
-              </div>
-
-              {/* Pagination */}
-              <div className="mt-8 flex items-center justify-center gap-2">
-                <Button variant="outline" size="icon">
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button variant="outline" size="sm">1</Button>
-                <Button variant="default" size="sm">2</Button>
-                <Button variant="outline" size="sm">3</Button>
-                <span className="px-2 text-muted-foreground">...</span>
-                <Button variant="outline" size="sm">10</Button>
-                <Button variant="outline" size="icon">
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
+              <Select value={city} onValueChange={setCity}>
+                <SelectTrigger><SelectValue placeholder="City" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Cities</SelectItem>
+                  {PAKISTAN_CITIES.map((item) => <SelectItem key={item.slug} value={item.slug}>{item.name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger><SelectValue placeholder="Sort by" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="rank">Rank Score</SelectItem>
+                  <SelectItem value="featured">Featured First</SelectItem>
+                  <SelectItem value="price-low">Price Low to High</SelectItem>
+                  <SelectItem value="price-high">Price High to Low</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" size="icon" onClick={() => setViewMode("grid")}><Grid3X3 className="h-4 w-4" /></Button>
+                <Button variant="outline" size="icon" onClick={() => setViewMode("list")}><List className="h-4 w-4" /></Button>
               </div>
             </div>
           </div>
+
+          <div className="mt-6 flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{loading ? "Loading live marketplace results..." : `${visibleAds.length} active ads found`}</p>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">
+              <SlidersHorizontal className="h-3 w-3" />
+              Public results exclude expired and unpublished ads
+            </div>
+          </div>
+
+          <div className={viewMode === "grid" ? "mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3" : "mt-6 space-y-4"}>
+            {visibleAds.map((ad) => <AdCard key={ad.id} ad={ad} />)}
+          </div>
+
+          {!loading && visibleAds.length === 0 && (
+            <div className="mt-8 rounded-3xl border border-dashed border-border bg-card p-10 text-center">
+              <h2 className="text-xl font-semibold">No active ads match these filters</h2>
+              <p className="mt-2 text-muted-foreground">Try a different category, city, or search phrase.</p>
+            </div>
+          )}
         </div>
       </main>
       <Footer />
     </div>
-  )
+  );
 }

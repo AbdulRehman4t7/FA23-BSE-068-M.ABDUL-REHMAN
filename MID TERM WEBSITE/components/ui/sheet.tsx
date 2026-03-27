@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
 import { X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -24,8 +25,8 @@ const Sheet = ({ children, open, onOpenChange }: { children: React.ReactNode, op
 
 const SheetContent = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & { side?: string }
+>(({ className, children, side: _side, ...props }, ref) => (
   <div
     ref={ref}
     className={cn(
@@ -79,14 +80,17 @@ SheetDescription.displayName = "SheetDescription"
 
 const SheetTrigger = React.forwardRef<
   HTMLButtonElement,
-  React.ButtonHTMLAttributes<HTMLButtonElement>
->(({ className, ...props }, ref) => (
-  <button
-    ref={ref}
-    className={cn("inline-flex items-center justify-center rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", className)}
-    {...props}
-  />
-))
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { asChild?: boolean }
+>(({ className, asChild = false, ...props }, ref) => {
+  const Comp = asChild ? Slot : "button"
+  return (
+    <Comp
+      ref={ref}
+      className={cn("inline-flex items-center justify-center rounded-md font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50", className)}
+      {...props}
+    />
+  )
+})
 SheetTrigger.displayName = "SheetTrigger"
 
 export {

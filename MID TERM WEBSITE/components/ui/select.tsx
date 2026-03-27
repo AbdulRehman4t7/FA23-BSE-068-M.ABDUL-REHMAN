@@ -4,14 +4,15 @@ import * as React from "react"
 import { ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const Select = ({ children, onValueChange, defaultValue }: { children: React.ReactNode, onValueChange?: (val: string) => void, defaultValue?: string }) => {
-  const [value, setValue] = React.useState(defaultValue || "")
+const Select = ({ children, onValueChange, defaultValue, value }: { children: React.ReactNode, onValueChange?: (val: string) => void, defaultValue?: string, value?: string }) => {
+  const [internalValue, setInternalValue] = React.useState(defaultValue || value || "")
+  const resolvedValue = value ?? internalValue
   
   return (
     <div className="relative w-full">
       {React.Children.map(children, child => {
         if (React.isValidElement(child)) {
-          return React.cloneElement(child as React.ReactElement<any>, { value, setValue, onValueChange })
+          return React.cloneElement(child as React.ReactElement<any>, { value: resolvedValue, setValue: setInternalValue, onValueChange })
         }
         return child
       })}
