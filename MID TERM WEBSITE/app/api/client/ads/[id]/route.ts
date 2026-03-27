@@ -2,11 +2,47 @@ import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { withAuth, UserSession } from '@/lib/auth';
 import { updateAdStatusSchema } from '@/lib/validations/ad';
+import { mockClientTransition, mockUpdateClientAd, mockSerializeAd } from '@/lib/mock-db';
+
+function isDemoMode() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  return !url || !anon || url.includes('your-supabase-url') || anon.includes('your-anon-key');
+}
 
 export const PATCH = withAuth(async (req: Request, user: UserSession, context: { params: { id: string } }) => {
   try {
     const adId = context.params.id;
     const body = await req.json();
+    if (isDemoMode()) {
+      const numericId = Number(adId);
+
+      if (body.status) {
+        const parsed = updateAdStatusSchema.parse(body);
+        const result = mockClientTransition({
+          ad_id: numericId,
+          user_id: user.id,
+          status: parsed.status === 'SUBMITTED' ? 'submitted' : 'payment_submitted',
+          note: parsed.note,
+        });
+        if (!result.ok) return NextResponse.json({ error: result.error }, { status: 400 });
+        return NextResponse.json({ message: 'Ad status updated', ad: mockSerializeAd(result.ad) }, { status: 200 });
+      }
+
+      const updated = mockUpdateClientAd({
+        ad_id: numericId,
+        user_id: user.id,
+        title: body.title,
+        description: body.description,
+        category_id: body.category_id,
+        city_id: body.city_id,
+        package_id: body.package_id,
+        mediaUrls: body.mediaUrls,
+      });
+      if (!updated.ok) return NextResponse.json({ error: updated.error }, { status: 400 });
+      return NextResponse.json({ message: 'Draft updated', ad: mockSerializeAd(updated.ad) }, { status: 200 });
+    }
+
     const { status, note } = updateAdStatusSchema.parse(body);
 
     // Validate ownership

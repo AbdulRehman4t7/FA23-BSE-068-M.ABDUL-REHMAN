@@ -14,6 +14,7 @@ export function Navbar() {
           <nav className="flex items-center space-x-6 text-sm font-medium">
             <Link href="/explore" className="text-foreground/70 transition-colors hover:text-foreground">Explore</Link>
             <Link href="/packages" className="text-foreground/70 transition-colors hover:text-foreground">Packages</Link>
+            <Link href="/faq" className="text-foreground/70 transition-colors hover:text-foreground">FAQ</Link>
           </nav>
         </div>
         <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">

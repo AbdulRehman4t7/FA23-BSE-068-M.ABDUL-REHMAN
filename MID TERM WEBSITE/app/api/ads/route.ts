@@ -31,10 +31,14 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const category = searchParams.get('category');
     const city = searchParams.get('city');
+    const search = searchParams.get('search');
+    const page = Number(searchParams.get('page') || '1');
+    const limit = Number(searchParams.get('limit') || '9');
 
     if (isDemoMode()) {
-      const ads = mockListPublishedAds({ category, city }).map(normalizeAdForClient);
-      return NextResponse.json({ ads }, { status: 200 });
+      const result = mockListPublishedAds({ category, city, search, page, limit });
+      const ads = result.data.map(normalizeAdForClient);
+      return NextResponse.json({ ads, meta: result.meta }, { status: 200 });
     }
 
     let query = supabase

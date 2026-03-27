@@ -10,6 +10,7 @@ export function Footer() {
           </p>
         </div>
         <div className="flex gap-4">
+          <Link href="/faq" className="text-sm font-medium underline underline-offset-4">FAQ</Link>
           <Link href="/terms" className="text-sm font-medium underline underline-offset-4">Terms</Link>
           <Link href="/privacy" className="text-sm font-medium underline underline-offset-4">Privacy</Link>
         </div>
