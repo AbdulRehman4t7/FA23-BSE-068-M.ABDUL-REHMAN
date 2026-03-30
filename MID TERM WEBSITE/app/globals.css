@@ -2,34 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-@custom-variant dark (&:is(.dark *));
-
 :root {
-  --background: 36 38% 92%;
-  --foreground: 24 28% 20%;
-  --card: 36 42% 95%;
-  --card-foreground: 24 28% 20%;
-  --popover: 36 42% 95%;
-  --popover-foreground: 24 28% 20%;
-  --primary: 22 45% 33%;
-  --primary-foreground: 38 60% 94%;
-  --secondary: 34 30% 86%;
-  --secondary-foreground: 24 24% 24%;
-  --muted: 34 25% 88%;
-  --muted-foreground: 24 14% 38%;
-  --accent: 16 55% 42%;
-  --accent-foreground: 40 75% 94%;
+  --background: 33 43% 95%;
+  --foreground: 26 29% 16%;
+  --card: 34 41% 98%;
+  --card-foreground: 26 29% 16%;
+  --popover: 34 41% 98%;
+  --popover-foreground: 26 29% 16%;
+  --primary: 24 55% 28%;
+  --primary-foreground: 37 52% 96%;
+  --secondary: 32 29% 88%;
+  --secondary-foreground: 26 24% 18%;
+  --muted: 34 31% 90%;
+  --muted-foreground: 26 12% 37%;
+  --accent: 36 63% 48%;
+  --accent-foreground: 28 27% 13%;
   --destructive: 0 62% 44%;
   --destructive-foreground: 36 42% 95%;
-  --border: 28 24% 67%;
-  --input: 30 23% 72%;
-  --ring: 22 45% 33%;
-  --chart-1: 22 45% 33%;
-  --chart-2: 40 40% 45%;
-  --chart-3: 14 52% 42%;
-  --chart-4: 30 28% 52%;
-  --chart-5: 18 35% 30%;
-  --radius: 0.45rem;
+  --border: 30 21% 76%;
+  --input: 30 21% 76%;
+  --ring: 24 55% 28%;
+  --chart-1: 24 55% 28%;
+  --chart-2: 39 59% 47%;
+  --chart-3: 18 56% 40%;
+  --chart-4: 151 29% 31%;
+  --chart-5: 33 27% 34%;
+  --radius: 0.8rem;
   --sidebar: 36 42% 93%;
   --sidebar-foreground: 24 28% 20%;
   --sidebar-primary: 22 45% 33%;
@@ -83,62 +81,18 @@
   --warning-foreground: 24 25% 14%;
 }
 
-@theme inline {
-  --font-sans: 'Inter', 'Inter Fallback', 'Geist', 'Geist Fallback';
-  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
-  --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
-  --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-}
-
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
+    outline-color: hsl(var(--ring) / 0.5);
   }
   body {
     @apply bg-background text-foreground;
     background-image:
-      radial-gradient(circle at 15% 20%, hsla(36, 45%, 88%, 0.6) 0, transparent 50%),
-      radial-gradient(circle at 85% 10%, hsla(24, 44%, 75%, 0.22) 0, transparent 42%),
-      linear-gradient(to bottom, hsla(34, 38%, 90%, 0.95), hsla(34, 32%, 86%, 0.95));
-    font-family: "Inter", "Segoe UI", sans-serif;
+      radial-gradient(circle at 12% 14%, hsla(33, 72%, 82%, 0.38) 0, transparent 34%),
+      radial-gradient(circle at 85% 10%, hsla(28, 54%, 70%, 0.2) 0, transparent 30%),
+      linear-gradient(180deg, hsla(34, 46%, 96%, 1) 0%, hsla(34, 28%, 91%, 1) 100%);
+    font-family: "Segoe UI", "Tahoma", sans-serif;
   }
   h1,
   h2,
@@ -147,7 +101,10 @@
   h5,
   h6,
   .font-heading {
-    font-family: "Times New Roman", "Georgia", serif;
-    letter-spacing: 0.01em;
+    font-family: "Georgia", "Times New Roman", serif;
+    letter-spacing: -0.02em;
+  }
+  ::selection {
+    background: hsla(24, 55%, 28%, 0.18);
   }
 }

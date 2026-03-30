@@ -2,17 +2,20 @@ import Link from "next/link"
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/70 bg-background/80">
-      <div className="container flex flex-col items-center justify-between gap-4 py-10 md:h-24 md:flex-row md:py-0">
-        <div className="flex flex-col items-center gap-4 px-8 md:flex-row md:gap-2 md:px-0">
-          <p className="text-center text-sm leading-loose text-muted-foreground md:text-left">
-            Crafted by AdFlow Pro. A trusted sponsored listing marketplace.
+    <footer className="border-t border-border/60 bg-card/65">
+      <div className="container grid gap-8 py-10 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div>
+          <p className="font-heading text-2xl">AdFlow Pro</p>
+          <p className="mt-3 max-w-2xl text-sm leading-7 text-muted-foreground">
+            Sponsored listing marketplace with moderation workflow, simulated payment verification, scheduling automation, analytics, and external media normalization.
           </p>
         </div>
-        <div className="flex gap-4">
-          <Link href="/faq" className="text-sm font-medium underline underline-offset-4">FAQ</Link>
-          <Link href="/terms" className="text-sm font-medium underline underline-offset-4">Terms</Link>
-          <Link href="/privacy" className="text-sm font-medium underline underline-offset-4">Privacy</Link>
+        <div className="flex flex-wrap gap-4 text-sm font-medium">
+          <Link href="/explore" className="hover:text-primary">Explore</Link>
+          <Link href="/packages" className="hover:text-primary">Packages</Link>
+          <Link href="/faq" className="hover:text-primary">FAQ</Link>
+          <Link href="/terms" className="hover:text-primary">Terms</Link>
+          <Link href="/privacy" className="hover:text-primary">Privacy</Link>
         </div>
       </div>
     </footer>

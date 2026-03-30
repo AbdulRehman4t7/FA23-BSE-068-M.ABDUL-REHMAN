@@ -1,179 +1,147 @@
-import DashboardLayout from "@/components/dashboard/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { StatusBadge } from "@/components/status-badge"
-import { Download, CreditCard, Clock, CheckCircle2 } from "lucide-react"
+"use client";
 
-const payments = [
-  {
-    id: "PAY-001",
-    date: "Mar 19, 2026",
-    ad: "Professional Photography Services",
-    package: "Standard",
-    amount: "$19.00",
-    status: "payment_pending" as const,
-    transactionId: "TXN789456123",
-  },
-  {
-    id: "PAY-002",
-    date: "Mar 18, 2026",
-    ad: "2023 Tesla Model S",
-    package: "Premium",
-    amount: "$39.00",
-    status: "published" as const,
-    transactionId: "TXN456789012",
-  },
-  {
-    id: "PAY-003",
-    date: "Mar 1, 2026",
-    ad: "Premium Office Space Downtown",
-    package: "Premium",
-    amount: "$39.00",
-    status: "published" as const,
-    transactionId: "TXN123456789",
-  },
-  {
-    id: "PAY-004",
-    date: "Feb 28, 2026",
-    ad: "Vintage Watch Collection",
-    package: "Premium",
-    amount: "$39.00",
-    status: "published" as const,
-    transactionId: "TXN987654321",
-  },
-]
-
-const stats = [
-  {
-    label: "Total Spent",
-    value: "$136.00",
-    icon: CreditCard,
-    color: "text-primary",
-    bg: "bg-primary/10",
-  },
-  {
-    label: "Pending",
-    value: "$19.00",
-    icon: Clock,
-    color: "text-amber-500",
-    bg: "bg-amber-500/10",
-  },
-  {
-    label: "Verified",
-    value: "$117.00",
-    icon: CheckCircle2,
-    color: "text-emerald-500",
-    bg: "bg-emerald-500/10",
-  },
-]
+import { useEffect, useMemo, useState } from "react";
+import DashboardLayout from "@/components/dashboard/dashboard-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { StatusBadge } from "@/components/status-badge";
+import { mockListClientDashboard, mockListClientPayments } from "@/lib/mock-db";
+import { CreditCard, Loader2 } from "lucide-react";
 
 export default function PaymentsPage() {
+  const [payments, setPayments] = useState<any[]>([]);
+  const [pendingAds, setPendingAds] = useState<any[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    ad_id: "",
+    amount: "",
+    method: "Bank Transfer",
+    transaction_ref: "",
+    sender_name: "",
+    screenshot_url: "",
+  });
+
+  function loadData() {
+    const dashboard = mockListClientDashboard({ user_id: "demo-user" });
+    const paymentHistory = mockListClientPayments("demo-user");
+    setPayments(paymentHistory);
+    setPendingAds(dashboard.ads.filter((ad) => ad.status === "payment_pending"));
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const totals = useMemo(() => ({
+    spent: payments.reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    pending: payments.filter((item) => item.status === "PENDING").reduce((sum, item) => sum + Number(item.amount || 0), 0),
+  }), [payments]);
+
+  async function submitPayment() {
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/client/payments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const payload = await res.json();
+      if (!res.ok) {
+        alert(payload.error || "Failed to submit payment");
+        return;
+      }
+      setForm({ ad_id: "", amount: "", method: "Bank Transfer", transaction_ref: "", sender_name: "", screenshot_url: "" });
+      loadData();
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Payments</h1>
-          <p className="text-muted-foreground">
-            View your payment history and pending verifications
-          </p>
+          <h1 className="text-3xl font-bold">Payments</h1>
+          <p className="text-muted-foreground">Submit manual payment proof and monitor verification history.</p>
         </div>
 
-        {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-3">
-          {stats.map((stat) => (
-            <Card key={stat.label}>
-              <CardContent className="flex items-center gap-4 p-6">
-                <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${stat.bg}`}>
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card><CardContent className="p-6"><p className="text-sm text-muted-foreground">Total submitted</p><p className="text-3xl font-bold">PKR {totals.spent.toLocaleString()}</p></CardContent></Card>
+          <Card><CardContent className="p-6"><p className="text-sm text-muted-foreground">Awaiting verification</p><p className="text-3xl font-bold">PKR {totals.pending.toLocaleString()}</p></CardContent></Card>
+          <Card><CardContent className="p-6"><p className="text-sm text-muted-foreground">Ads needing payment</p><p className="text-3xl font-bold">{pendingAds.length}</p></CardContent></Card>
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-[1.1fr_1.4fr]">
+          <Card>
+            <CardHeader><CardTitle>Submit Payment Proof</CardTitle></CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Ad ID</Label>
+                <Input value={form.ad_id} onChange={(e) => setForm((prev) => ({ ...prev, ad_id: e.target.value }))} placeholder="Enter ad ID from pending list" />
+              </div>
+              <div className="space-y-2">
+                <Label>Amount</Label>
+                <Input value={form.amount} onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))} placeholder="1500" />
+              </div>
+              <div className="space-y-2">
+                <Label>Method</Label>
+                <Input value={form.method} onChange={(e) => setForm((prev) => ({ ...prev, method: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label>Transaction Reference</Label>
+                <Input value={form.transaction_ref} onChange={(e) => setForm((prev) => ({ ...prev, transaction_ref: e.target.value }))} placeholder="TXN-ADFLOW-100" />
+              </div>
+              <div className="space-y-2">
+                <Label>Sender Name</Label>
+                <Input value={form.sender_name} onChange={(e) => setForm((prev) => ({ ...prev, sender_name: e.target.value }))} placeholder="Account holder name" />
+              </div>
+              <div className="space-y-2">
+                <Label>Screenshot URL</Label>
+                <Textarea value={form.screenshot_url} onChange={(e) => setForm((prev) => ({ ...prev, screenshot_url: e.target.value }))} rows={3} placeholder="https://..." />
+              </div>
+              <Button onClick={submitPayment} disabled={submitting} className="w-full">
+                {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
+                Submit Payment
+              </Button>
+            </CardContent>
+          </Card>
+
+          <div className="space-y-6">
+            <Card>
+              <CardHeader><CardTitle>Ads Waiting for Payment</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                {pendingAds.length ? pendingAds.map((ad) => (
+                  <div key={ad.id} className="rounded-2xl border border-border p-4">
+                    <p className="font-semibold">{ad.title}</p>
+                    <p className="text-sm text-muted-foreground">Ad ID: {ad.id} • Package: {ad.package.name}</p>
+                  </div>
+                )) : <p className="text-sm text-muted-foreground">No ads currently waiting for payment.</p>}
               </CardContent>
             </Card>
-          ))}
+
+            <Card>
+              <CardHeader><CardTitle>Payment History</CardTitle></CardHeader>
+              <CardContent className="space-y-3">
+                {payments.map((payment) => (
+                  <div key={payment.id} className="flex flex-col gap-2 rounded-2xl border border-border p-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="font-semibold">{payment.ad?.title || `Ad #${payment.ad_id}`}</p>
+                      <p className="text-sm text-muted-foreground">{payment.transaction_ref}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold">PKR {Number(payment.amount).toLocaleString()}</span>
+                      <StatusBadge status={payment.status === "VERIFIED" ? "payment_verified" : payment.status === "REJECTED" ? "rejected" : "payment_submitted"} />
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
         </div>
-
-        {/* Payments Table */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Payment History</CardTitle>
-              <CardDescription>All your payment transactions</CardDescription>
-            </div>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" />
-              Export
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Payment ID</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Ad</TableHead>
-                    <TableHead>Package</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Transaction ID</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {payments.map((payment) => (
-                    <TableRow key={payment.id}>
-                      <TableCell className="font-mono text-sm">{payment.id}</TableCell>
-                      <TableCell>{payment.date}</TableCell>
-                      <TableCell className="max-w-[200px] truncate font-medium">
-                        {payment.ad}
-                      </TableCell>
-                      <TableCell>{payment.package}</TableCell>
-                      <TableCell className="font-medium">{payment.amount}</TableCell>
-                      <TableCell className="font-mono text-sm">{payment.transactionId}</TableCell>
-                      <TableCell>
-                        <StatusBadge status={payment.status} />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment Instructions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Payment Instructions</CardTitle>
-          </CardHeader>
-          <CardContent className="prose prose-sm dark:prose-invert max-w-none">
-            <ol className="text-muted-foreground">
-              <li>Select your desired package when creating an ad</li>
-              <li>Make payment to our official account (details provided on checkout)</li>
-              <li>Submit your transaction ID and payment proof</li>
-              <li>Our team will verify your payment within 2-24 hours</li>
-              <li>Once verified, your ad will be reviewed and published</li>
-            </ol>
-            <p className="mt-4 text-muted-foreground">
-              For any payment issues, contact support at{" "}
-              <a href="mailto:support@adflowpro.com" className="text-primary hover:underline">
-                support@adflowpro.com
-              </a>
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </DashboardLayout>
-  )
+  );
 }

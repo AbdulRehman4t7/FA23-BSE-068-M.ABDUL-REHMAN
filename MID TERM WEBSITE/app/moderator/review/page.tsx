@@ -1,340 +1,121 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import DashboardLayout from "@/components/dashboard/dashboard-layout"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { PackageBadge, type PackageType } from "@/components/package-badge"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  CheckCircle2,
-  XCircle,
-  Flag,
-  ChevronLeft,
-  ChevronRight,
-  MapPin,
-  Calendar,
-  User,
-  ExternalLink,
-} from "lucide-react"
-
-interface ReviewAd {
-  id: number
-  title: string
-  description: string
-  category: string
-  city: string
-  package: PackageType
-  image: string
-  seller: {
-    name: string
-    email: string
-    joinedAt: string
-    totalAds: number
-  }
-  submittedAt: string
-}
-
-const reviewQueue: ReviewAd[] = [
-  {
-    id: 1,
-    title: "Premium Office Space in Financial District",
-    description: "Modern office space with stunning views of the city skyline. Features include:\n\n- 2,500 sq ft open floor plan\n- Floor-to-ceiling windows\n- State-of-the-art HVAC system\n- 24/7 security access\n- On-site parking available\n\nPerfect for startups or established businesses looking for a prestigious address.",
-    category: "Real Estate",
-    city: "New York",
-    package: "premium",
-    image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&h=400&fit=crop",
-    seller: {
-      name: "Metro Realty Group",
-      email: "contact@metrorealty.com",
-      joinedAt: "Jan 2024",
-      totalAds: 45,
-    },
-    submittedAt: "10 min ago",
-  },
-  {
-    id: 2,
-    title: "2024 Mercedes-Benz GLE 450",
-    description: "Like-new condition, only 5,000 miles. Fully loaded with premium package, panoramic sunroof, and all the latest tech features.",
-    category: "Vehicles",
-    city: "Los Angeles",
-    package: "premium",
-    image: "https://images.unsplash.com/photo-1617788138017-80ad40651399?w=600&h=400&fit=crop",
-    seller: {
-      name: "Luxury Auto Sales",
-      email: "sales@luxuryauto.com",
-      joinedAt: "Mar 2024",
-      totalAds: 23,
-    },
-    submittedAt: "25 min ago",
-  },
-  {
-    id: 3,
-    title: "Professional Wedding Photography",
-    description: "Award-winning wedding photography services. Package includes engagement session, full day coverage, and 500+ edited photos.",
-    category: "Services",
-    city: "Chicago",
-    package: "standard",
-    image: "https://images.unsplash.com/photo-1554048612-b6a482bc67e5?w=600&h=400&fit=crop",
-    seller: {
-      name: "Jennifer Smith",
-      email: "jen@photosmith.com",
-      joinedAt: "Jun 2024",
-      totalAds: 5,
-    },
-    submittedAt: "1 hour ago",
-  },
-]
+import { useEffect, useState } from "react";
+import DashboardLayout from "@/components/dashboard/dashboard-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { PackageBadge } from "@/components/package-badge";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { CheckCircle2, ChevronLeft, ChevronRight, Flag, MapPin, User, XCircle } from "lucide-react";
 
 export default function ReviewPage() {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false)
-  const [rejectReason, setRejectReason] = useState("")
-  const [moderationNote, setModerationNote] = useState("")
+  const [queue, setQueue] = useState<any[]>([]);
+  const [index, setIndex] = useState(0);
+  const [note, setNote] = useState("");
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
 
-  const currentAd = reviewQueue[currentIndex]
-  const totalAds = reviewQueue.length
-
-  const handleApprove = () => {
-    // In a real app, this would send to backend
-    console.log("Approved:", currentAd.id, "Note:", moderationNote)
-    setModerationNote("")
-    if (currentIndex < totalAds - 1) {
-      setCurrentIndex(currentIndex + 1)
-    }
+  async function loadQueue() {
+    const res = await fetch("/api/moderator/review-queue");
+    const data = await res.json();
+    setQueue(data.queue || []);
+    setIndex(0);
   }
 
-  const handleReject = () => {
-    console.log("Rejected:", currentAd.id, "Reason:", rejectReason)
-    setRejectDialogOpen(false)
-    setRejectReason("")
-    setModerationNote("")
-    if (currentIndex < totalAds - 1) {
-      setCurrentIndex(currentIndex + 1)
-    }
-  }
+  useEffect(() => {
+    loadQueue();
+  }, []);
 
-  const handleFlag = () => {
-    console.log("Flagged:", currentAd.id, "Note:", moderationNote)
-    setModerationNote("")
-    if (currentIndex < totalAds - 1) {
-      setCurrentIndex(currentIndex + 1)
-    }
+  const current = queue[index];
+
+  async function moderate(action: "approve" | "reject" | "flag", reason?: string) {
+    if (!current) return;
+    await fetch(`/api/moderator/ads/${current.id}/review`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, note: reason || note }),
+    });
+    setNote("");
+    setRejectReason("");
+    setRejectOpen(false);
+    loadQueue();
   }
 
   return (
     <DashboardLayout role="moderator">
       <div className="space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Review Queue</h1>
-            <p className="text-muted-foreground">
-              {totalAds} ads pending review
-            </p>
+            <h1 className="text-3xl font-bold">Review Queue</h1>
+            <p className="text-muted-foreground">{queue.length} ads awaiting moderation</p>
           </div>
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentIndex(Math.max(0, currentIndex - 1))}
-              disabled={currentIndex === 0}
-            >
+            <Button variant="outline" size="icon" onClick={() => setIndex((prev) => Math.max(0, prev - 1))} disabled={index === 0}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm text-muted-foreground">
-              {currentIndex + 1} of {totalAds}
-            </span>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setCurrentIndex(Math.min(totalAds - 1, currentIndex + 1))}
-              disabled={currentIndex === totalAds - 1}
-            >
+            <span className="text-sm text-muted-foreground">{queue.length ? `${index + 1} of ${queue.length}` : "No queue"}</span>
+            <Button variant="outline" size="icon" onClick={() => setIndex((prev) => Math.min(queue.length - 1, prev + 1))} disabled={index >= queue.length - 1}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Ad Preview */}
-          <div className="lg:col-span-2 space-y-6">
+        {!current ? (
+          <Card><CardContent className="p-10 text-center text-muted-foreground">No ads are pending review right now.</CardContent></Card>
+        ) : (
+          <div className="grid gap-6 lg:grid-cols-[1.7fr_1fr]">
             <Card>
-              <CardContent className="p-0">
-                <div className="relative aspect-video overflow-hidden rounded-t-xl">
-                  <Image
-                    src={currentAd.image}
-                    alt={currentAd.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute right-3 top-3">
-                    <PackageBadge packageType={currentAd.package} />
-                  </div>
+              <CardContent className="space-y-6 p-6">
+                <div className="flex flex-wrap items-center gap-3">
+                  <h2 className="text-2xl font-semibold">{current.title}</h2>
+                  <PackageBadge packageType={current.packages?.name?.toLowerCase() ?? "basic"} />
                 </div>
-                <div className="p-6">
-                  <h2 className="text-xl font-bold">{currentAd.title}</h2>
-                  <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {currentAd.city}
-                    </span>
-                    <span>{currentAd.category}</span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      Submitted {currentAd.submittedAt}
-                    </span>
-                  </div>
-                  <div className="mt-6">
-                    <h3 className="font-medium">Description</h3>
-                    <p className="mt-2 whitespace-pre-wrap text-muted-foreground">
-                      {currentAd.description}
-                    </p>
-                  </div>
+                <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{current.cities?.name}</span>
+                  <span>{current.categories?.name}</span>
+                  <span>Rank score: {current.rank_score}</span>
                 </div>
+                <p className="whitespace-pre-wrap text-muted-foreground">{current.description}</p>
+                <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Moderation note" rows={4} />
               </CardContent>
             </Card>
 
-            {/* Moderation Notes */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Moderation Notes</CardTitle>
-                <CardDescription>Add notes for internal reference</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Textarea
-                  placeholder="Add any notes about this ad..."
-                  value={moderationNote}
-                  onChange={(e) => setModerationNote(e.target.value)}
-                  rows={3}
-                />
-              </CardContent>
-            </Card>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader><CardTitle>Seller</CardTitle></CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  <div className="flex items-center gap-2 font-medium"><User className="h-4 w-4" />{current.seller_profiles?.business_name}</div>
+                  <p className="text-muted-foreground">{current.seller_profiles?.email || "seller@demo.com"}</p>
+                  <p className="text-muted-foreground">Verified: {current.seller_profiles?.is_verified ? "Yes" : "No"}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader><CardTitle>Actions</CardTitle></CardHeader>
+                <CardContent className="space-y-3">
+                  <Button className="w-full" onClick={() => moderate("approve")}><CheckCircle2 className="mr-2 h-4 w-4" />Approve to Payment</Button>
+                  <Button variant="outline" className="w-full" onClick={() => moderate("flag")}><Flag className="mr-2 h-4 w-4" />Flag for Review</Button>
+                  <Button variant="destructive" className="w-full" onClick={() => setRejectOpen(true)}><XCircle className="mr-2 h-4 w-4" />Reject</Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button className="w-full" onClick={handleApprove}>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Approve
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="w-full"
-                  onClick={() => setRejectDialogOpen(true)}
-                >
-                  <XCircle className="mr-2 h-4 w-4" />
-                  Reject
-                </Button>
-                <Button variant="outline" className="w-full" onClick={handleFlag}>
-                  <Flag className="mr-2 h-4 w-4" />
-                  Flag for Review
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Seller Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Seller Information</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                    <User className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{currentAd.seller.name}</p>
-                    <p className="text-sm text-muted-foreground">{currentAd.seller.email}</p>
-                  </div>
-                </div>
-                <dl className="mt-4 space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Member Since</dt>
-                    <dd className="font-medium">{currentAd.seller.joinedAt}</dd>
-                  </div>
-                  <div className="flex justify-between">
-                    <dt className="text-muted-foreground">Total Ads</dt>
-                    <dd className="font-medium">{currentAd.seller.totalAds}</dd>
-                  </div>
-                </dl>
-                <Button variant="outline" size="sm" className="mt-4 w-full">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View Seller Profile
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Quick Guidelines */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm">Quick Check</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2 text-sm text-muted-foreground">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" />
-                    Clear title and description
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" />
-                    Appropriate images
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" />
-                    No prohibited content
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-500" />
-                    Correct category
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        )}
       </div>
 
-      {/* Reject Dialog */}
-      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Reject Ad</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejecting this ad. This will be sent to the seller.
-            </DialogDescription>
+            <DialogTitle>Reject listing</DialogTitle>
+            <DialogDescription>Share a reason so the client can fix and resubmit the ad.</DialogDescription>
           </DialogHeader>
-          <Textarea
-            placeholder="Reason for rejection..."
-            value={rejectReason}
-            onChange={(e) => setRejectReason(e.target.value)}
-            rows={4}
-          />
+          <Textarea value={rejectReason} onChange={(e) => setRejectReason(e.target.value)} rows={4} placeholder="Reason for rejection" />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleReject}>
-              Reject Ad
-            </Button>
+            <Button variant="outline" onClick={() => setRejectOpen(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={() => moderate("reject", rejectReason)}>Reject Ad</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </DashboardLayout>
-  )
+  );
 }

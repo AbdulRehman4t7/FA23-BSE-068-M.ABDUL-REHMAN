@@ -3,31 +3,45 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+const navItems = [
+  { href: "/explore", label: "Explore" },
+  { href: "/packages", label: "Packages" },
+  { href: "/faq", label: "FAQ" },
+]
+
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/70 bg-background/90 backdrop-blur supports-[backdrop-filter]:bg-background/70">
-      <div className="container flex h-14 items-center">
-        <div className="mr-4 hidden md:flex">
-          <Link href="/" className="mr-6 flex items-center space-x-2">
-            <span className="hidden font-heading text-lg font-bold tracking-wide sm:inline-block">AdFlow Pro</span>
-          </Link>
-          <nav className="flex items-center space-x-6 text-sm font-medium">
-            <Link href="/explore" className="text-foreground/70 transition-colors hover:text-foreground">Explore</Link>
-            <Link href="/packages" className="text-foreground/70 transition-colors hover:text-foreground">Packages</Link>
-            <Link href="/faq" className="text-foreground/70 transition-colors hover:text-foreground">FAQ</Link>
-          </nav>
-        </div>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <div className="w-full flex-1 md:w-auto md:flex-none">
+    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl">
+      <div className="container flex h-20 items-center justify-between gap-4">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary/20 bg-primary text-primary-foreground shadow-lg shadow-primary/15">
+            A
           </div>
-          <nav className="flex items-center">
-            <Link href="/login">
-              <Button variant="ghost" size="sm">Login</Button>
+          <div>
+            <p className="font-heading text-xl font-semibold leading-none">AdFlow Pro</p>
+            <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-muted-foreground">Sponsored Marketplace</p>
+          </div>
+        </Link>
+
+        <nav className="hidden items-center gap-2 rounded-full border border-border/70 bg-card/70 p-1.5 md:flex">
+          {navItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="rounded-full px-4 py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
+            >
+              {item.label}
             </Link>
-            <Link href="/register">
-              <Button size="sm">Register</Button>
-            </Link>
-          </nav>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
+          <Link href="/login">
+            <Button variant="ghost" size="sm" className="rounded-full px-4">Login</Button>
+          </Link>
+          <Link href="/register">
+            <Button size="sm" className="rounded-full px-5">Launch Ad</Button>
+          </Link>
         </div>
       </div>
     </header>

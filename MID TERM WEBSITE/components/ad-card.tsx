@@ -31,47 +31,50 @@ export function AdCard({ ad }: AdCardProps) {
     ad.media?.[0]?.thumbnail_url ?? (typeof ad.image === "string" ? ad.image : undefined)
   const status = ad.status ?? "published"
   const cityName = typeof ad.city === "string" ? ad.city : ad.city?.name
-  const categoryName =
-    typeof ad.category === "string" ? ad.category : ad.category?.name
+  const categoryName = typeof ad.category === "string" ? ad.category : ad.category?.name
   const packageName = typeof ad.package === "string" ? ad.package : ad.package?.name
   const packageType = (packageName?.toLowerCase?.() ?? "basic") as any
 
   return (
-    <Card className="overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
-      <div className="aspect-video relative bg-slate-100">
+    <Card className="flex h-full flex-col overflow-hidden rounded-[1.8rem] border border-border/70 bg-card/95 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(76,46,22,0.12)]">
+      <div className="relative aspect-[1.15/0.82] bg-slate-100">
         {thumbnailSrc ? (
           <img
             src={thumbnailSrc}
             alt={ad.title}
-            className="object-cover w-full h-full"
+            className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex items-center justify-center h-full text-slate-400 text-sm">No Preview</div>
+          <div className="flex h-full items-center justify-center text-sm text-slate-400">No Preview</div>
         )}
-        <div className="absolute top-2 right-2 flex gap-1">
+        <div className="absolute left-3 top-3 flex gap-2">
           {ad.is_featured && (
-            <span className="bg-amber-500 text-white text-[10px] px-1.5 py-0.5 rounded font-bold uppercase">Featured</span>
+            <span className="rounded-full bg-primary px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-primary-foreground">
+              Featured
+            </span>
           )}
-          <StatusBadge status={status} className="bg-white/90 backdrop-blur-sm shadow-sm" />
+          <StatusBadge status={status} className="bg-white/90 shadow-sm backdrop-blur-sm" />
         </div>
       </div>
-      <CardHeader className="p-4 pb-2">
-        <div className="flex justify-between items-start gap-2">
-          <CardTitle className="text-lg line-clamp-1">{ad.title}</CardTitle>
-          <span className="font-bold text-primary shrink-0">PKR {ad.price?.toLocaleString() || 'N/A'}</span>
+      <CardHeader className="p-5 pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <CardTitle className="line-clamp-2 text-xl">{ad.title}</CardTitle>
+          <span className="shrink-0 rounded-full bg-primary/10 px-3 py-1 text-sm font-semibold text-primary">
+            PKR {ad.price?.toLocaleString() || "N/A"}
+          </span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
-          <span>{cityName || 'Anywhere'}</span>
+        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+          <span>{cityName || "Anywhere"}</span>
           <span>•</span>
-          <span>{categoryName || 'Uncategorized'}</span>
+          <span>{categoryName || "Uncategorized"}</span>
         </div>
       </CardHeader>
-      <CardContent className="p-4 pt-0 flex-1">
-        <p className="text-sm text-muted-foreground line-clamp-2">{ad.description}</p>
+      <CardContent className="flex-1 p-5 pt-0">
+        <p className="line-clamp-3 text-sm leading-7 text-muted-foreground">{ad.description}</p>
       </CardContent>
-      <CardFooter className="p-4 pt-0 flex justify-between items-center border-t mt-auto">
-        <PackageBadge type={packageType || 'basic'} />
-        <Link href={`/ads/${ad.slug ?? ad.id}`} className="text-primary text-sm font-medium hover:underline">
+      <CardFooter className="mt-auto flex items-center justify-between border-t border-border/60 p-5 pt-4">
+        <PackageBadge type={packageType || "basic"} />
+        <Link href={`/ads/${ad.slug ?? ad.id}`} className="text-sm font-semibold text-primary hover:underline">
           View Details →
         </Link>
       </CardFooter>
