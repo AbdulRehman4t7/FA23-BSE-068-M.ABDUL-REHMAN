@@ -151,7 +151,7 @@ export default function DashboardPage() {
         {/* Header */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold tracking-tight">Dashboard {loading && "(Loading...)"}</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground">
               Welcome back{data.profile?.display_name ? `, ${data.profile.display_name}` : ''}! Here's an overview of your ads.
             </p>
@@ -159,30 +159,40 @@ export default function DashboardPage() {
           <Button asChild>
             <Link href="/dashboard/ads/new">
               <Plus className="mr-2 h-4 w-4" />
-              Create New Ad
+              Create Ad
             </Link>
           </Button>
         </div>
 
         {/* Stats Grid */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {displayStats.map((stat, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.bg}`}>
-                    <stat.icon className={`h-5 w-5 ${stat.color}`} />
-                  </div>
-                  <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="mt-4">
-                  <p className="text-2xl font-bold">{stat.value}</p>
-                  <p className="text-sm text-muted-foreground">{stat.label}</p>
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">{stat.change}</p>
-              </CardContent>
-            </Card>
-          ))}
+          {loading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <div className="h-10 w-10 animate-pulse rounded-lg bg-muted" />
+                    <div className="mt-4 h-7 w-16 animate-pulse rounded bg-muted" />
+                    <div className="mt-2 h-4 w-24 animate-pulse rounded bg-muted" />
+                  </CardContent>
+                </Card>
+              ))
+            : displayStats.map((stat, i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${stat.bg}`}>
+                        <stat.icon className={`h-5 w-5 ${stat.color}`} />
+                      </div>
+                      <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <div className="mt-4">
+                      <p className="text-2xl font-bold">{stat.value}</p>
+                      <p className="text-sm text-muted-foreground">{stat.label}</p>
+                    </div>
+                    <p className="mt-2 text-xs text-muted-foreground">{stat.change}</p>
+                  </CardContent>
+                </Card>
+              ))}
         </div>
 
         {/* Recent Ads */}
@@ -236,7 +246,7 @@ export default function DashboardPage() {
                 <Plus className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <p className="font-semibold">Create New Ad</p>
+                <p className="font-semibold">Create Ad</p>
                 <p className="text-sm text-muted-foreground">Post a new listing</p>
               </div>
             </CardContent>

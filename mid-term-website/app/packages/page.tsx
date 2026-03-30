@@ -1,6 +1,5 @@
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { PackagesSection } from "@/components/landing/packages-section"
 import { Check, HelpCircle } from "lucide-react"
 import {
   Table,
@@ -65,8 +64,6 @@ export default function PackagesPage() {
             </p>
           </div>
         </section>
-
-        <PackagesSection />
 
         {/* Comparison Table */}
         <section className="py-16">

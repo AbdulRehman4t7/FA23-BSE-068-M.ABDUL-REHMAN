@@ -85,7 +85,7 @@ export default function AdsPage() {
             <p className="text-muted-foreground">Track every ad from draft to expiry with workflow-safe actions.</p>
           </div>
           <Button asChild>
-            <Link href="/dashboard/ads/new"><Plus className="mr-2 h-4 w-4" />Create New Ad</Link>
+            <Link href="/dashboard/ads/new"><Plus className="mr-2 h-4 w-4" />Create Ad</Link>
           </Button>
         </div>
 
@@ -95,7 +95,37 @@ export default function AdsPage() {
         </div>
 
         <div className="space-y-4">
-          {loading && <Card><CardContent className="p-8 text-center text-muted-foreground">Loading ads...</CardContent></Card>}
+          {loading && (
+            <>
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Card key={i}>
+                  <CardContent className="p-5">
+                    <div className="space-y-3">
+                      <div className="h-5 w-2/3 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-1/3 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </>
+          )}
+          {!loading && filteredAds.length === 0 && (
+            <Card>
+              <CardContent className="flex flex-col items-center gap-4 p-12 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+                  <Plus className="h-7 w-7 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold">No ads yet</p>
+                  <p className="mt-1 text-sm text-muted-foreground">Create your first listing to get started.</p>
+                </div>
+                <Button asChild>
+                  <Link href="/dashboard/ads/new">Create your first listing</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          )}
           {!loading && filteredAds.map((ad) => (
             <Card key={ad.id}>
               <CardContent className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between">

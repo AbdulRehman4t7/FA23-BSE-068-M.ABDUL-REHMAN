@@ -108,9 +108,23 @@ export default function AdminUsersPage() {
                   </div>
 
                   <div className="flex flex-wrap items-center gap-3">
-                    <span className="rounded-full bg-muted px-3 py-1 text-xs font-medium">{user.role.replace("_", " ")}</span>
+                    {/* Colored role badge */}
+                    {(() => {
+                      const roleColors: Record<string, string> = {
+                        CLIENT: "bg-slate-500/10 text-slate-600",
+                        MODERATOR: "bg-blue-500/10 text-blue-600",
+                        ADMIN: "bg-amber-500/10 text-amber-600",
+                        SUPER_ADMIN: "bg-red-500/10 text-red-600",
+                      };
+                      const color = roleColors[user.role] ?? "bg-muted text-muted-foreground";
+                      return (
+                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${color}`}>
+                          {user.role.replace("_", " ")}
+                        </span>
+                      );
+                    })()}
                     <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">{user.adsCount} ads</span>
-                    {user.verifiedSeller && <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600">Verified seller</span>}
+                    {user.verifiedSeller && <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600">✓ Verified seller</span>}
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">

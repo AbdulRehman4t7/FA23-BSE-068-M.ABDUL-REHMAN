@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Zap } from "lucide-react"
+import { ArrowLeft, Zap } from "lucide-react"
 
 export default function AuthLayout({
   children,
@@ -35,6 +35,11 @@ export default function AuthLayout({
       {/* Right side - Form */}
       <div className="flex w-full flex-col justify-center px-4 py-12 lg:w-1/2 lg:px-8">
         <div className="mx-auto w-full max-w-sm">
+          {/* Back to home link — always visible */}
+          <Link href="/" className="mb-6 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+            <ArrowLeft className="h-4 w-4" />
+            Back to AdFlow Pro
+          </Link>
           <Link href="/" className="mb-8 flex items-center gap-2 lg:hidden">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
               <Zap className="h-5 w-5 text-primary-foreground" />

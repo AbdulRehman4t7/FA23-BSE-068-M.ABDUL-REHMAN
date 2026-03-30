@@ -1,7 +1,9 @@
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 const navItems = [
   { href: "/explore", label: "Explore" },
@@ -10,6 +12,8 @@ const navItems = [
 ]
 
 export function Navbar() {
+  const pathname = usePathname()
+
   return (
     <header className="sticky top-0 z-50 border-b border-border/60 bg-background/85 backdrop-blur-xl">
       <div className="container flex h-20 items-center justify-between gap-4">
@@ -24,23 +28,31 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-2 rounded-full border border-border/70 bg-card/70 p-1.5 md:flex">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-full px-4 py-2 text-sm font-medium text-foreground/70 transition-colors hover:bg-muted hover:text-foreground"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const active = pathname === item.href || pathname.startsWith(item.href + "/")
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                  active
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground/70 hover:bg-muted hover:text-foreground"
+                )}
+              >
+                {item.label}
+              </Link>
+            )
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
           <Link href="/login">
             <Button variant="ghost" size="sm" className="rounded-full px-4">Login</Button>
           </Link>
-          <Link href="/register">
-            <Button size="sm" className="rounded-full px-5">Launch Ad</Button>
+          <Link href="/dashboard/ads/new">
+            <Button size="sm" className="rounded-full px-5">Create Ad</Button>
           </Link>
         </div>
       </div>

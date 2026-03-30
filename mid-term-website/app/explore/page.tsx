@@ -24,10 +24,15 @@ export default function ExplorePage() {
   const [sortBy, setSortBy] = useState("rank");
   const [adsList, setAdsList] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [loadingTimeout, setLoadingTimeout] = useState(false);
 
   useEffect(() => {
     async function fetchAds() {
       setLoading(true);
+      setError(false);
+      setLoadingTimeout(false);
+      const timer = setTimeout(() => setLoadingTimeout(true), 9000);
       try {
         const params = new URLSearchParams();
         if (category !== "all") params.set("category", category);
@@ -55,7 +60,9 @@ export default function ExplorePage() {
         setAdsList(mapped);
       } catch (_error) {
         setAdsList([]);
+        setError(true);
       } finally {
+        clearTimeout(timer);
         setLoading(false);
       }
     }
@@ -88,21 +95,21 @@ export default function ExplorePage() {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search ads, sellers, categories..." className="pl-10" />
               </div>
-              <Select value={category} onValueChange={setCategory}>
+              <Select value={category} onValueChange={setCategory} disabled={loading}>
                 <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
                   {CATEGORIES.map((item) => <SelectItem key={item.slug} value={item.slug}>{item.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Select value={city} onValueChange={setCity}>
+              <Select value={city} onValueChange={setCity} disabled={loading}>
                 <SelectTrigger><SelectValue placeholder="City" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Cities</SelectItem>
                   {PAKISTAN_CITIES.map((item) => <SelectItem key={item.slug} value={item.slug}>{item.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Select value={sortBy} onValueChange={setSortBy}>
+              <Select value={sortBy} onValueChange={setSortBy} disabled={loading}>
                 <SelectTrigger><SelectValue placeholder="Sort by" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="rank">Rank Score</SelectItem>
@@ -127,13 +134,38 @@ export default function ExplorePage() {
           </div>
 
           <div className={viewMode === "grid" ? "mt-6 grid gap-6 md:grid-cols-2 xl:grid-cols-3" : "mt-6 space-y-4"}>
-            {visibleAds.map((ad) => <AdCard key={ad.id} ad={ad} />)}
+            {loading
+              ? Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="rounded-[1.8rem] border border-border/70 bg-card/95 overflow-hidden">
+                    <div className="aspect-[1.15/0.82] animate-pulse bg-muted" />
+                    <div className="p-5 space-y-3">
+                      <div className="h-5 w-3/4 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+                      <div className="h-4 w-full animate-pulse rounded bg-muted" />
+                    </div>
+                  </div>
+                ))
+              : visibleAds.map((ad) => <AdCard key={ad.id} ad={ad} />)}
           </div>
 
-          {!loading && visibleAds.length === 0 && (
+          {!loading && error && (
+            <div className="mt-8 rounded-3xl border border-dashed border-destructive/40 bg-destructive/5 p-10 text-center">
+              <h2 className="text-xl font-semibold">Could not load listings</h2>
+              <p className="mt-2 text-muted-foreground">Please try refreshing the page.</p>
+              <button onClick={() => window.location.reload()} className="mt-4 text-sm text-primary hover:underline">Refresh</button>
+            </div>
+          )}
+
+          {!loading && !error && visibleAds.length === 0 && (
             <div className="mt-8 rounded-3xl border border-dashed border-border bg-card p-10 text-center">
               <h2 className="text-xl font-semibold">No active ads match these filters</h2>
               <p className="mt-2 text-muted-foreground">Try a different category, city, or search phrase.</p>
+              <button
+                onClick={() => { setCategory("all"); setCity("all"); setSearchTerm(""); setSortBy("rank"); }}
+                className="mt-4 text-sm text-primary hover:underline"
+              >
+                Reset filters
+              </button>
             </div>
           )}
         </div>

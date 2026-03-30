@@ -1,6 +1,5 @@
 import Link from "next/link";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { mockAnalyticsSummary, mockListPaymentQueue } from "@/lib/mock-db";
 import { ArrowRight, BarChart3, CreditCard, FileText, Users } from "lucide-react";
@@ -56,7 +55,7 @@ export default function AdminPage() {
             <CardHeader><CardTitle>System Health</CardTitle></CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex items-center justify-between rounded-2xl border border-border p-4"><span>Latest DB latency</span><strong>{summary.health?.db_latency_ms ?? 0} ms</strong></div>
-              <div className="flex items-center justify-between rounded-2xl border border-border p-4"><span>Moderation queue</span><strong>{summary.moderationQueue}</strong></div>
+              <div className="flex items-center justify-between rounded-2xl border border-border p-4"><span>Moderation queue</span><Link href="/moderator/review" className="font-semibold text-primary hover:underline">{summary.moderationQueue} →</Link></div>
               <div className="flex items-center justify-between rounded-2xl border border-border p-4"><span>Health status</span><strong className="capitalize">{summary.health?.status ?? "healthy"}</strong></div>
             </CardContent>
           </Card>

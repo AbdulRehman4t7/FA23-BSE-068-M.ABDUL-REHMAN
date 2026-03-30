@@ -7,6 +7,7 @@ import {
   BarChart3,
   CreditCard,
   LayoutDashboard,
+  List,
   Menu,
   PlusCircle,
   ShieldCheck,
@@ -21,6 +22,7 @@ import { supabase } from "@/lib/supabase";
 const roleMenus = {
   client: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/dashboard/ads", label: "My Ads", icon: List },
     { href: "/dashboard/ads/new", label: "Create Ad", icon: PlusCircle },
     { href: "/dashboard/payments", label: "Payments", icon: CreditCard },
   ],
@@ -33,6 +35,7 @@ const roleMenus = {
     { href: "/admin/payments", label: "Payments", icon: CreditCard },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/moderator/review", label: "Moderation", icon: ShieldCheck },
   ],
 } as const;
 
@@ -46,7 +49,8 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
-  const menu = role === "moderator" ? roleMenus.moderator : role === "admin" ? roleMenus.admin : roleMenus.client;
+  const isAdmin = role === "admin";
+  const menu = role === "moderator" ? roleMenus.moderator : isAdmin ? roleMenus.admin : roleMenus.client;
 
   const handleLogout = async () => {
     if (supabase) {
@@ -60,10 +64,14 @@ export default function DashboardLayout({
       <div className="mx-auto flex min-h-screen max-w-[1600px]">
         <aside
           className={cn(
-            "fixed inset-y-0 left-0 z-50 w-72 border-r border-border bg-card/95 p-5 backdrop-blur transition-transform lg:static lg:translate-x-0",
+            "fixed inset-y-0 left-0 z-50 w-72 border-r bg-card/95 p-5 backdrop-blur transition-transform lg:static lg:translate-x-0",
+            isAdmin ? "border-amber-500/40" : "border-border",
             open ? "translate-x-0" : "-translate-x-full"
           )}
         >
+          {/* Admin top accent bar */}
+          {isAdmin && <div className="absolute inset-x-0 top-0 h-1 rounded-t-none bg-amber-500" />}
+
           <div className="mb-8 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-3">
               <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
@@ -71,9 +79,16 @@ export default function DashboardLayout({
               </div>
               <div>
                 <p className="font-heading text-lg font-semibold">AdFlow Pro</p>
-                <p className="text-xs text-muted-foreground">Control Center</p>
+                <p className="text-xs text-muted-foreground">
+                  {isAdmin ? "Admin Panel" : "Control Center"}
+                </p>
               </div>
             </Link>
+            {isAdmin && (
+              <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-600">
+                Admin
+              </span>
+            )}
             <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpen(false)}>
               <X className="h-4 w-4" />
             </Button>
@@ -104,7 +119,15 @@ export default function DashboardLayout({
             <p className="mt-2 text-sm text-foreground">Draft to publish with moderation, payment verification, scheduling, and expiry automation.</p>
           </div>
 
-          <Button variant="outline" className="mt-6 w-full justify-start" onClick={handleLogout}>
+          {/* Role badge in footer */}
+          <div className="mt-4 rounded-2xl border border-border bg-muted/20 px-4 py-3 text-xs text-muted-foreground">
+            Signed in as{" "}
+            <span className={cn("font-semibold", isAdmin ? "text-amber-600" : "text-foreground")}>
+              {isAdmin ? "Admin" : role === "moderator" ? "Moderator" : "Client"}
+            </span>
+          </div>
+
+          <Button variant="outline" className="mt-4 w-full justify-start" onClick={handleLogout}>
             <User className="mr-2 h-4 w-4" />
             Sign out
           </Button>
@@ -116,8 +139,8 @@ export default function DashboardLayout({
               <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpen(true)}>
                 <Menu className="h-5 w-5" />
               </Button>
-              <div className="hidden rounded-full border border-border px-3 py-1 text-xs text-muted-foreground sm:block">
-                Production-style demo mode
+              <div className="hidden rounded-full border border-border px-3 py-1 text-xs text-muted-foreground sm:block" title="All actions work but data may reset periodically. Sign up for a real account to keep your data.">
+                Demo mode — data may reset periodically
               </div>
               <Link href="/" className="text-sm font-medium text-primary">
                 Back to site

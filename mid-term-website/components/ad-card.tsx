@@ -35,6 +35,12 @@ export function AdCard({ ad }: AdCardProps) {
   const packageName = typeof ad.package === "string" ? ad.package : ad.package?.name
   const packageType = (packageName?.toLowerCase?.() ?? "basic") as any
 
+  const categoryIcons: Record<string, string> = {
+    "real estate": "🏠", "electronics": "📱", "vehicles": "🚗",
+    "services": "🛠️", "fashion": "👕", "jobs": "💼", "collectibles": "🧿",
+  }
+  const categoryIcon = categoryIcons[(categoryName ?? "").toLowerCase()] ?? "📋"
+
   return (
     <Card className="flex h-full flex-col overflow-hidden rounded-[1.8rem] border border-border/70 bg-card/95 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_45px_rgba(76,46,22,0.12)]">
       <div className="relative aspect-[1.15/0.82] bg-slate-100">
@@ -45,7 +51,10 @@ export function AdCard({ ad }: AdCardProps) {
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-slate-400">No Preview</div>
+          <div className="flex h-full flex-col items-center justify-center gap-2 bg-muted/40 text-muted-foreground">
+            <span className="text-3xl">{categoryIcon}</span>
+            <span className="text-xs">No image</span>
+          </div>
         )}
         <div className="absolute left-3 top-3 flex gap-2">
           {ad.is_featured && (

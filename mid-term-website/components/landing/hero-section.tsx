@@ -1,12 +1,12 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { BarChart3, BadgeCheck, Clock3, ShieldCheck } from "lucide-react"
+import { BarChart3, BadgeCheck, Clock3, MapPin } from "lucide-react"
 
 const heroStats = [
-  { label: "Active workflow states", value: "10", icon: Clock3 },
-  { label: "Manual payment verification", value: "100%", icon: ShieldCheck },
-  { label: "Featured rank boost", value: "+50", icon: BarChart3 },
-  { label: "Verified seller trust", value: "+5", icon: BadgeCheck },
+  { label: "Active listings", value: "16+", icon: BarChart3 },
+  { label: "Cities covered", value: "3", icon: MapPin },
+  { label: "Verified in under 24hrs", value: "100%", icon: Clock3 },
+  { label: "Verified sellers", value: "50+", icon: BadgeCheck },
 ]
 
 export function HeroSection() {
@@ -29,7 +29,7 @@ export function HeroSection() {
               <Button size="lg" className="w-full rounded-full px-7 sm:w-auto">Explore Marketplace</Button>
             </Link>
             <Link href="/dashboard/ads/new">
-              <Button variant="outline" size="lg" className="w-full rounded-full px-7 sm:w-auto">Create Sponsored Ad</Button>
+              <Button variant="outline" size="lg" className="w-full rounded-full px-7 sm:w-auto">Create Ad</Button>
             </Link>
           </div>
           <div className="mt-10 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
