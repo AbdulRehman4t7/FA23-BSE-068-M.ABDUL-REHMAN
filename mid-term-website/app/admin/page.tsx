@@ -1,5 +1,6 @@
 import Link from "next/link";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { mockAnalyticsSummary, mockListPaymentQueue } from "@/lib/mock-db";
 import { ArrowRight, BarChart3, CreditCard, FileText, Users } from "lucide-react";

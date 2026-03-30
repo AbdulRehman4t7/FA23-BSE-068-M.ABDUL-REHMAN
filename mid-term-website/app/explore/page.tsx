@@ -95,22 +95,22 @@ export default function ExplorePage() {
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} placeholder="Search ads, sellers, categories..." className="pl-10" />
               </div>
-              <Select value={category} onValueChange={setCategory} disabled={loading}>
-                <SelectTrigger><SelectValue placeholder="Category" /></SelectTrigger>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger disabled={loading}><SelectValue placeholder="Category" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Categories</SelectItem>
                   {CATEGORIES.map((item) => <SelectItem key={item.slug} value={item.slug}>{item.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Select value={city} onValueChange={setCity} disabled={loading}>
-                <SelectTrigger><SelectValue placeholder="City" /></SelectTrigger>
+              <Select value={city} onValueChange={setCity}>
+                <SelectTrigger disabled={loading}><SelectValue placeholder="City" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Cities</SelectItem>
                   {PAKISTAN_CITIES.map((item) => <SelectItem key={item.slug} value={item.slug}>{item.name}</SelectItem>)}
                 </SelectContent>
               </Select>
-              <Select value={sortBy} onValueChange={setSortBy} disabled={loading}>
-                <SelectTrigger><SelectValue placeholder="Sort by" /></SelectTrigger>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger disabled={loading}><SelectValue placeholder="Sort by" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="rank">Rank Score</SelectItem>
                   <SelectItem value="featured">Featured First</SelectItem>
