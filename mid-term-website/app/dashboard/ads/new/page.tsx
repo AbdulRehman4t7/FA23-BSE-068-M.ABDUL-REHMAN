@@ -38,15 +38,13 @@ export default function NewAdPage() {
     category_id: "",
     city_id: "",
     package_id: "standard",
-    mediaUrl: "",
+    mediaUrls: [] as string[],
   });
 
   const selectedPackage = useMemo(
     () => PACKAGES.find((item) => item.id === form.package_id) ?? PACKAGES[1],
     [form.package_id]
   );
-
-  const mediaUrlValid = form.mediaUrl === "" ? null : isValidUrl(form.mediaUrl);
 
   async function handleCreate() {
     setSubmitting(true);
@@ -61,7 +59,7 @@ export default function NewAdPage() {
           category_id: form.category_id,
           city_id: form.city_id,
           package_id: form.package_id,
-          mediaUrls: form.mediaUrl ? [form.mediaUrl] : [],
+          mediaUrls: form.mediaUrls,
         }),
       });
 
@@ -167,26 +165,35 @@ export default function NewAdPage() {
                 </div>
               </div>
 
-              {/* Media URL with validation */}
+              {/* Media Image Upload */}
               <div className="space-y-2">
-                <Label>Primary media URL</Label>
-                <div className="relative">
-                  <Input
-                    value={form.mediaUrl}
-                    onChange={(e) => setForm((prev) => ({ ...prev, mediaUrl: e.target.value }))}
-                    onBlur={() => setMediaUrlTouched(true)}
-                    placeholder="https://image-url.com or https://youtube.com/watch?v=..."
-                    className={cn(
-                      mediaUrlTouched && form.mediaUrl && !mediaUrlValid && "border-destructive focus-visible:ring-destructive",
-                      mediaUrlTouched && mediaUrlValid && "border-emerald-500 focus-visible:ring-emerald-500"
-                    )}
-                  />
-                  {mediaUrlTouched && form.mediaUrl && (
-                    <span className={cn("mt-1 text-xs", mediaUrlValid ? "text-emerald-600" : "text-destructive")}>
-                      {mediaUrlValid ? "✓ Valid URL" : "Invalid URL format"}
-                    </span>
-                  )}
-                </div>
+                <Label>Upload Images</Label>
+                <Input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => {
+                    const files = e.target.files;
+                    if (!files) return;
+                    Array.from(files).forEach((file) => {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        if (typeof reader.result === 'string') {
+                          setForm((prev) => ({
+                            ...prev,
+                            mediaUrls: [...prev.mediaUrls, reader.result as string]
+                          }));
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    });
+                  }}
+                />
+                {form.mediaUrls.length > 0 && (
+                  <div className="text-sm text-muted-foreground mt-2">
+                    {form.mediaUrls.length} file(s) selected
+                  </div>
+                )}
               </div>
 
               {/* Package cards */}

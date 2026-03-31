@@ -34,11 +34,26 @@ export default function PaymentsPage() {
     screenshot_url: "",
   });
 
-  function loadData() {
-    const dashboard = mockListClientDashboard({ user_id: "demo-user" });
-    const paymentHistory = mockListClientPayments("demo-user");
-    setPayments(paymentHistory);
-    setPendingAds(dashboard.ads.filter((ad) => ad.status === "payment_pending"));
+  async function loadData() {
+    try {
+      const dashboardRes = await fetch("/api/client/dashboard");
+      const paymentsRes = await fetch("/api/client/payments");
+      
+      if (dashboardRes.ok) {
+        const dashboardData = await dashboardRes.json();
+        // Assuming dashboardData.ads contains the list of ads
+        setPendingAds((dashboardData.ads || []).filter((ad: any) => 
+          ad.status === "payment_pending" || ad.status === "PAYMENT_PENDING"
+        ));
+      }
+      
+      if (paymentsRes.ok) {
+        const paymentsData = await paymentsRes.json();
+        setPayments(paymentsData.payments || paymentsData || []);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   useEffect(() => {
@@ -103,7 +118,7 @@ export default function PaymentsPage() {
                     <Link href="/dashboard/ads" className="text-primary hover:underline">View your ads</Link>
                   </p>
                 ) : (
-                  <Select value={form.ad_id} onValueChange={handleAdSelect}>
+                  <Select value={form.ad_id || undefined} onValueChange={handleAdSelect}>
                     <SelectTrigger><SelectValue placeholder="Select an ad" /></SelectTrigger>
                     <SelectContent>
                       {pendingAds.map((ad) => (
@@ -121,7 +136,7 @@ export default function PaymentsPage() {
               </div>
               <div className="space-y-2">
                 <Label>Payment Method <span className="text-destructive">*</span></Label>
-                <Select value={form.method} onValueChange={(v) => setForm((prev) => ({ ...prev, method: v }))}>
+                <Select value={form.method || undefined} onValueChange={(v) => setForm((prev) => ({ ...prev, method: v }))}>
                   <SelectTrigger><SelectValue placeholder="Select method" /></SelectTrigger>
                   <SelectContent>
                     {PAYMENT_METHODS.map((m) => (
@@ -139,8 +154,26 @@ export default function PaymentsPage() {
                 <Input value={form.sender_name} onChange={(e) => setForm((prev) => ({ ...prev, sender_name: e.target.value }))} placeholder="Account holder name" />
               </div>
               <div className="space-y-2">
-                <Label>Screenshot URL</Label>
-                <Textarea value={form.screenshot_url} onChange={(e) => setForm((prev) => ({ ...prev, screenshot_url: e.target.value }))} rows={3} placeholder="https://..." />
+                <Label>Upload Screenshot (Optional)</Label>
+                <Input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onloadend = () => {
+                        if (typeof reader.result === 'string') {
+                          setForm((prev) => ({ ...prev, screenshot_url: reader.result as string }));
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }} 
+                />
+                {form.screenshot_url && (
+                  <p className="text-xs text-muted-foreground mt-1">Image selected.</p>
+                )}
               </div>
               <Button onClick={submitPayment} disabled={submitting} className="w-full">
                 {submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CreditCard className="mr-2 h-4 w-4" />}
