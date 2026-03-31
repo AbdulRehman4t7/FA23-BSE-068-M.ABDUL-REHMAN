@@ -83,7 +83,7 @@ const SelectTrigger = React.forwardRef<HTMLButtonElement, React.ButtonHTMLAttrib
           if (React.isValidElement(child) && typeof child.type !== 'string' && (child.type as any).displayName === 'SelectValue') {
             return child
           }
-          if (React.isValidElement(child) && !child.props.children) {
+          if (React.isValidElement(child) && !(child.props as any).children) {
              return React.cloneElement(child as React.ReactElement<any>, { value: context.value })
           }
           return child
