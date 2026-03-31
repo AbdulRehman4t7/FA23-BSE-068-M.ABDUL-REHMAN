@@ -104,7 +104,7 @@ const recentAds: {
 ]
 
 export default function DashboardPage() {
-  const [data, setData] = useState<any>({ stats: null, ads: recentAds, profile: null })
+  const [data, setData] = useState<any>({ stats: null, ads: [], profile: null })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -112,20 +112,15 @@ export default function DashboardPage() {
       try {
         const token = localStorage.getItem('token')
         const res = await fetch('/api/client/dashboard', {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': `Bearer ${token}` },
+          cache: "no-store",
+          next: { revalidate: 0 }
         })
         if (res.ok) {
           const json = await res.json()
           setData({
             stats: json.stats,
-            ads: json.ads?.length > 0 ? json.ads.map((ad: any) => ({
-              id: ad.id,
-              title: ad.title,
-              status: ad.status.toLowerCase(),
-              package: ad.packages?.name?.toLowerCase() || 'basic',
-              views: 0,
-              date: new Date(ad.created_at).toLocaleDateString()
-            })) : recentAds,
+            ads: json.ads?.length > 0 ? json.ads.map((ad: any) => ({ id: ad.id, title: ad.title, status: String(ad.status || 'draft').toLowerCase(), package: (ad.packages?.name || 'basic').toLowerCase(), views: ad.views || 0, date: ad.created_at ? new Date(ad.created_at).toLocaleDateString() : new Date().toLocaleDateString() })) : [],
             profile: json.profile
           })
         }
@@ -278,4 +273,6 @@ export default function DashboardPage() {
     </DashboardLayout>
   )
 }
+
+
 

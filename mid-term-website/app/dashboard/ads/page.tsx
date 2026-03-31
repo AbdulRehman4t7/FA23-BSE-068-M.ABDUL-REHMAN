@@ -38,7 +38,7 @@ export default function AdsPage() {
   async function loadAds() {
     setLoading(true);
     try {
-      const res = await fetch("/api/client/dashboard");
+      const res = await fetch("/api/client/dashboard", { cache: "no-store", next: { revalidate: 0 } });
       const json = await res.json();
       const mapped = (json.ads || []).map((ad: any) => ({
         id: ad.id,

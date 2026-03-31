@@ -3,6 +3,8 @@ import { withAuth, UserSession } from '@/lib/auth';
 import { createAdSchema } from '@/lib/validations/ad';
 import { mockCreateAdDraft, mockListClientDashboard, mockSerializeAd } from '@/lib/mock-db';
 
+export const dynamic = 'force-dynamic';
+
 export const GET = withAuth(async (_req: Request, user: UserSession) => {
   const dashboard = mockListClientDashboard({ user_id: user.id });
   return NextResponse.json({ ads: dashboard.ads.map(mockSerializeAd) }, { status: 200 });

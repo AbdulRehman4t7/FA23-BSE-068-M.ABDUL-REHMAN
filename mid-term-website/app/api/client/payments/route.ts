@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
+export const dynamic = 'force-dynamic';
 import { supabase } from '@/lib/supabase';
 import { withAuth, UserSession } from '@/lib/auth';
 import { submitPaymentSchema } from '@/lib/validations/payment';
-import { mockSubmitPayment } from '@/lib/mock-db';
+import { mockSubmitPayment, mockListClientPayments } from '@/lib/mock-db';
 
 function isDemoMode() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -78,3 +79,23 @@ export const POST = withAuth(async (req: Request, user: UserSession) => {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }, ['CLIENT']);
+
+
+export const GET = withAuth(async (req: Request, user: UserSession) => {
+  try {
+    if (isDemoMode()) {
+      const payments = mockListClientPayments(user.id);
+      return NextResponse.json({ payments }, { status: 200 });
+    }
+    const { data: payments, error } = await supabase
+      .from('payments')
+      .select('*, ads(title)')
+      .eq('user_id', user.id)
+      .order('submitted_at', { ascending: false });
+
+    if (error) throw error;
+    return NextResponse.json({ payments }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}, ['CLIENT', 'MODERATOR', 'ADMIN', 'SUPER_ADMIN']);

@@ -3,6 +3,8 @@ import { supabase } from '@/lib/supabase';
 import { withAuth, UserSession } from '@/lib/auth';
 import { mockListClientDashboard } from '@/lib/mock-db';
 
+export const dynamic = 'force-dynamic';
+
 function isDemoMode() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;

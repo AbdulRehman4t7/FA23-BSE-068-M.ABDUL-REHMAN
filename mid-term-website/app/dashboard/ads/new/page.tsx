@@ -19,6 +19,7 @@ import {
 import { CATEGORIES, PACKAGES, PAKISTAN_CITIES } from "@/lib/constants";
 import { ArrowLeft, CheckCircle2, Loader2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const TITLE_MAX = 80;
 const DESC_MAX = 1000;
@@ -65,10 +66,16 @@ export default function NewAdPage() {
 
       if (!res.ok) {
         const payload = await res.json();
-        alert(payload.error?.[0]?.message || payload.error || "Failed to create draft");
+        const errorMsg = Array.isArray(payload.error) 
+          ? payload.error[0]?.message || 'Validation error'
+          : typeof payload.error === 'string'
+            ? payload.error
+            : 'Failed to create draft';
+        toast.error(errorMsg);
         return;
       }
 
+      toast.success("Draft created successfully!");
       router.push("/dashboard/ads");
     } finally {
       setSubmitting(false);
@@ -272,3 +279,4 @@ export default function NewAdPage() {
     </DashboardLayout>
   );
 }
+

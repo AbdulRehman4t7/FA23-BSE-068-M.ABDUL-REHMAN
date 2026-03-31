@@ -18,6 +18,7 @@ import { StatusBadge } from "@/components/status-badge";
 import { mockListClientDashboard, mockListClientPayments } from "@/lib/mock-db";
 import { CreditCard, Loader2, Receipt } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 
 const PAYMENT_METHODS = ["JazzCash", "EasyPaisa", "Bank Transfer", "Other"];
 
@@ -36,8 +37,8 @@ export default function PaymentsPage() {
 
   async function loadData() {
     try {
-      const dashboardRes = await fetch("/api/client/dashboard");
-      const paymentsRes = await fetch("/api/client/payments");
+      const dashboardRes = await fetch("/api/client/dashboard", { cache: "no-store" });
+      const paymentsRes = await fetch("/api/client/payments", { cache: "no-store" });
       
       if (dashboardRes.ok) {
         const dashboardData = await dashboardRes.json();
@@ -82,9 +83,15 @@ export default function PaymentsPage() {
       });
       const payload = await res.json();
       if (!res.ok) {
-        alert(payload.error || "Failed to submit payment");
+        const errorMsg = Array.isArray(payload.error) 
+          ? payload.error[0]?.message || 'Validation error'
+          : typeof payload.error === 'string'
+            ? payload.error
+            : 'Failed to submit payment';
+        toast.error(errorMsg);
         return;
       }
+      toast.success("Payment submitted successfully!");
       setForm({ ad_id: "", amount: "", method: "", transaction_ref: "", sender_name: "", screenshot_url: "" });
       loadData();
     } finally {
@@ -224,3 +231,4 @@ export default function PaymentsPage() {
     </DashboardLayout>
   );
 }
+

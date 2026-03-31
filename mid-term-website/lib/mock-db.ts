@@ -442,7 +442,9 @@ function initialState(): MockDbState {
   };
 }
 
-let state = initialState();
+const globalForMockDb = global as unknown as { mockDbState?: MockDbState };
+let state = globalForMockDb.mockDbState || initialState();
+if (process.env.NODE_ENV !== "production") globalForMockDb.mockDbState = state;
 
 function getNextId(list: Array<{ id: number }>) {
   return list.reduce((max, item) => Math.max(max, item.id), 0) + 1;
