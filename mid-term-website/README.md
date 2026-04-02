@@ -1,4 +1,4 @@
-<img width="599" height="449" alt="11" src="https://github.com/user-attachments/assets/6e343604-7c27-4557-988a-a947a04a4acc" /><div align="center">
+<div align="center">
 
 <br/>
 
@@ -47,35 +47,60 @@
 
 ## 🖼️ Project Screenshots
 
-> *(Add your project screenshots below. Replace the placeholder images with actual screenshots of your running application.)*
-
 <br/>
 
 <div align="center">
   <strong>🏠 Landing Page / Home</strong><br/><br/>
-  <img src=" <img width="599" height="449" alt="11" src="https://github.com/user-attachments/assets/23a2b882-64b9-4dd4-95ae-fb6d9641d6b1" /> " alt="AdFlow Pro - Landing Page" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
+  <img src="https://github.com/user-attachments/assets/6e343604-7c27-4557-988a-a947a04a4acc" alt="AdFlow Pro - Landing Page" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
 </div>
 
+<br/><br/>
+
+<div align="center">
+  <strong>🏠 Home — Featured Listings</strong><br/><br/>
+  <img src="https://github.com/user-attachments/assets/23a2b882-64b9-4dd4-95ae-fb6d9641d6b1" alt="AdFlow Pro - Featured Listings" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
+</div>
 
 <br/><br/>
 
 <div align="center">
   <strong>📋 Client Dashboard — My Ads</strong><br/><br/>
-  <img src="YOUR_SCREENSHOT_2_HERE" alt="AdFlow Pro - Client Dashboard" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
+  <img src="https://github.com/user-attachments/assets/423a1759-8f8a-461f-a636-a48d661c2a7a" alt="AdFlow Pro - Client Dashboard" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
+</div>
+
+<br/><br/>
+
+<div align="center">
+  <strong>📝 Create New Ad</strong><br/><br/>
+  <img src="https://github.com/user-attachments/assets/62773101-78dc-41d4-9ed5-674cc38eed2a" alt="AdFlow Pro - Create Ad" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
 </div>
 
 <br/><br/>
 
 <div align="center">
   <strong>🛡️ Moderator Review Queue</strong><br/><br/>
-  <img src="YOUR_SCREENSHOT_3_HERE" alt="AdFlow Pro - Moderator Panel" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
+  <img src="https://github.com/user-attachments/assets/4aefd640-fe74-465e-b707-4a90fd2c401c" alt="AdFlow Pro - Moderator Panel" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
 </div>
 
 <br/><br/>
 
 <div align="center">
   <strong>⚙️ Admin Panel — Analytics & Payments</strong><br/><br/>
-  <img src="YOUR_SCREENSHOT_4_HERE" alt="AdFlow Pro - Admin Dashboard" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
+  <img src="https://github.com/user-attachments/assets/6602572a-8d91-4bbe-bbc7-dd3875c79a14" alt="AdFlow Pro - Admin Dashboard" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
+</div>
+
+<br/><br/>
+
+<div align="center">
+  <strong>👑 Admin — User Management</strong><br/><br/>
+  <img src="https://github.com/user-attachments/assets/e20a97b6-4f12-4712-8bb8-b478cdfd8972" alt="AdFlow Pro - User Management" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
+</div>
+
+<br/><br/>
+
+<div align="center">
+  <strong>💳 Payment Verification</strong><br/><br/>
+  <img src="https://github.com/user-attachments/assets/f82e7a57-c64e-4ae3-aeca-b9a536895d13" alt="AdFlow Pro - Payment Verification" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
 </div>
 
 <br/>
