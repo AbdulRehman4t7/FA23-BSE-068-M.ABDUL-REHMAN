@@ -1,10 +1,6 @@
-<div align="center">
+<img width="599" height="449" alt="11" src="https://github.com/user-attachments/assets/6e343604-7c27-4557-988a-a947a04a4acc" /><div align="center">
 
 <br/>
-
-<!-- ═══════════════════════════════════════════════════════════════ -->
-<!--                     LOGO / BANNER AREA                        -->
-<!-- ═══════════════════════════════════════════════════════════════ -->
 
 # ⚡ AdFlow Pro
 
@@ -14,12 +10,13 @@
   <img src="https://img.shields.io/badge/Next.js-14+-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js"/>
   <img src="https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.0-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS"/>
-  <img src="https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"/>
+  <img src="https://img.shields.io/badge/Supabase-3FCF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
   <img src="https://img.shields.io/badge/Zod-Validation-E3A008?style=for-the-badge" alt="Zod"/>
 </p>
 
 <p align="center">
-  <a href="YOUR_VERCEL_LINK_HERE" target="_blank">
+  <a href="https://fa-23-bse-068-m-abdul-rehman.vercel.app/dashboard/ads/new" target="_blank">
     <img src="https://img.shields.io/badge/🚀_Live_Demo-View_Project-5C6BC0?style=for-the-badge" alt="Live Demo"/>
   </a>
   &nbsp;
@@ -54,16 +51,14 @@
 
 <br/>
 
-<!-- ═══════ SCREENSHOT 1 ═══════ -->
 <div align="center">
   <strong>🏠 Landing Page / Home</strong><br/><br/>
-  <!-- Replace this with your actual screenshot -->
-  <img src="YOUR_SCREENSHOT_1_HERE" alt="AdFlow Pro - Landing Page" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
+  <img src=" <img width="599" height="449" alt="11" src="https://github.com/user-attachments/assets/23a2b882-64b9-4dd4-95ae-fb6d9641d6b1" /> " alt="AdFlow Pro - Landing Page" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
 </div>
+
 
 <br/><br/>
 
-<!-- ═══════ SCREENSHOT 2 ═══════ -->
 <div align="center">
   <strong>📋 Client Dashboard — My Ads</strong><br/><br/>
   <img src="YOUR_SCREENSHOT_2_HERE" alt="AdFlow Pro - Client Dashboard" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
@@ -71,7 +66,6 @@
 
 <br/><br/>
 
-<!-- ═══════ SCREENSHOT 3 ═══════ -->
 <div align="center">
   <strong>🛡️ Moderator Review Queue</strong><br/><br/>
   <img src="YOUR_SCREENSHOT_3_HERE" alt="AdFlow Pro - Moderator Panel" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
@@ -79,7 +73,6 @@
 
 <br/><br/>
 
-<!-- ═══════ SCREENSHOT 4 ═══════ -->
 <div align="center">
   <strong>⚙️ Admin Panel — Analytics & Payments</strong><br/><br/>
   <img src="YOUR_SCREENSHOT_4_HERE" alt="AdFlow Pro - Admin Dashboard" width="80%" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);"/>
@@ -120,14 +113,11 @@ Think of it as the engine that powers a platform like **OLX, Craigslist, or a sp
 ## 🔄 The Ad Lifecycle
 
 Every advertisement on AdFlow Pro moves through a clearly defined state machine:
-
 ```
 Draft  ➔  Submitted  ➔  Under Review  ➔  Payment Pending
                                                   ↓
 Archived  ←  Expired  ←  Published  ←  Scheduled  ←  Payment Verified
 ```
-
-This ensures complete traceability — from the moment a seller creates a draft, all the way to when the ad expires and gets archived automatically.
 
 <br/>
 
@@ -139,6 +129,7 @@ This ensures complete traceability — from the moment a seller creates a draft,
 
 - **🔐 Authentication & Role-Based Access** — Custom JWT with bcryptjs + Supabase Auth integration. Each role gets its own protected dashboard.
 - **📝 Full Ad Lifecycle Management** — Ads move through 10 distinct stages with automated state transitions.
+- **🗄️ Supabase Backend** — PostgreSQL database hosted on Supabase with Row Level Security (RLS) policies for data protection.
 - **🧐 Moderation Queue** — Dedicated moderator interface to review, approve, reject, or flag submitted ads.
 - **💳 Payment Verification System** — Clients submit transaction receipts; admins verify them before ads go live.
 - **📅 Ad Scheduling** — Publish ads immediately or schedule them for a future date.
@@ -162,9 +153,48 @@ This ensures complete traceability — from the moment a seller creates a draft,
 | **Language** | TypeScript |
 | **Styling** | Tailwind CSS |
 | **UI Components** | Radix UI + shadcn/ui-inspired components, Lucide React icons |
-| **Database** | Supabase / PostgreSQL *(with in-memory Mock DB fallback)* |
+| **Database** | Supabase (PostgreSQL) |
+| **Auth** | Supabase Auth + Custom JWT + bcryptjs |
+| **ORM / Queries** | Supabase JS Client (`@supabase/supabase-js`) |
 | **Validation** | Zod |
-| **Auth** | Custom JWT + bcryptjs + Supabase Auth |
+| **Deployment** | Vercel |
+
+<br/>
+
+---
+
+<br/>
+
+## 🗄️ Supabase Setup
+
+AdFlow Pro uses **Supabase** as its primary backend — providing a hosted PostgreSQL database, authentication, and real-time capabilities.
+
+### 1. Create a Supabase Project
+
+Go to [supabase.com](https://supabase.com) → New Project → note your **Project URL** and **Anon Key**.
+
+### 2. Run the Schema
+
+In your Supabase dashboard → **SQL Editor**, run:
+```sql
+-- From db/schema.sql
+-- Creates: users, ads, categories, cities, packages, payments tables
+```
+
+Then seed the data:
+```sql
+-- From db/seed.sql
+-- Inserts: default categories, cities, promotional packages
+```
+
+### 3. Configure Environment Variables
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+```
+
+> ⚠️ **Demo Mode:** If these variables are not set, AdFlow Pro automatically falls back to an **in-memory mock database** — no Supabase account needed to explore the project.
 
 <br/>
 
@@ -173,7 +203,6 @@ This ensures complete traceability — from the moment a seller creates a draft,
 <br/>
 
 ## 📂 Project Structure
-
 ```
 adflow-pro/
 ├── app/
@@ -193,12 +222,13 @@ adflow-pro/
 │   └── landing/                # Hero, Featured Ads, Packages sections
 │
 ├── lib/
-│   ├── mock-db.ts              # In-memory database (Demo mode)
+│   ├── supabase.ts             # Supabase client initialization
+│   ├── mock-db.ts              # In-memory database (Demo mode fallback)
 │   ├── validations/            # Zod schemas (Ad, Auth, Payment)
 │   └── utils.ts                # Helper functions
 │
 ├── db/
-│   ├── schema.sql              # PostgreSQL table definitions
+│   ├── schema.sql              # PostgreSQL table definitions (run in Supabase)
 │   └── seed.sql                # Seed data (categories, cities, packages)
 │
 └── package.json
@@ -211,11 +241,10 @@ adflow-pro/
 <br/>
 
 ## ⚙️ Core Workflow
-
 ```
-1. Register / Login          →   JWT issued, role assigned (Client / Mod / Admin)
+1. Register / Login          →   JWT issued via Supabase Auth, role assigned
          ↓
-2. Create Ad (Client)        →   Fill details, select promotional package
+2. Create Ad (Client)        →   Saved to Supabase PostgreSQL, package selected
          ↓
 3. Moderation Review         →   Moderator approves, rejects, or requests changes
          ↓
@@ -239,14 +268,19 @@ adflow-pro/
 ### Prerequisites
 - Node.js 18+
 - npm or yarn
+- Supabase account *(optional — Demo Mode works without it)*
 
-
+**1. Clone the repository:**
+```bash
+git clone https://github.com/AbdulRehman4t7/adflow-pro.git
+cd adflow-pro
+```
 
 **2. Set up environment variables:**
 ```bash
 cp .env.example .env.local
+# Add your Supabase URL and keys (see Supabase Setup section above)
 ```
-
 
 **3. Install dependencies:**
 ```bash
@@ -259,6 +293,8 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser. 🎉
+
+> 💡 **No Supabase?** Skip step 2 — the app runs in Demo Mode with mock data automatically.
 
 <br/>
 
@@ -275,5 +311,5 @@ This project is for educational purposes. All rights reserved © 2024 Abdul Rehm
 ---
 
 <div align="center">
-  <sub>Built with ❤️ using Next.js, TypeScript & Tailwind CSS</sub>
+  <sub>Built with ❤️ using Next.js, TypeScript, Tailwind CSS & Supabase</sub>
 </div>
