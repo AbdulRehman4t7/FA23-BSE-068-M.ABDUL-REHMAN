@@ -40,8 +40,8 @@
 > 🚀 **[View Live Project →](https://fa-23-bse-068-m-abdul-rehman.vercel.app/dashboard/ads/new)**
 
 <br/>
-CREDENTIALS
-EMAIL:a03480748044@gmail.com
+CREDENTIALS<br>
+EMAIL:a03480748044@gmail.com<br>
 password:00000000
 
 ---
