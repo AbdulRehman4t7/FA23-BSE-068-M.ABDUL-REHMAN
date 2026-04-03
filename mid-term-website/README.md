@@ -41,8 +41,8 @@
 
 <br/>
 CREDENTIALS<br>
-EMAIL:a03480748044@gmail.com<br>
-password:00000000
+EMAIL: a03480748044@gmail.com<br>
+password: 00000000
 
 ---
 
