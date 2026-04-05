@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin, supabase } from '@/lib/supabase';
 import { loginSchema } from '@/lib/validations/auth';
 import { AUTH_COOKIE_NAME, signToken } from '@/lib/auth';
 
@@ -8,8 +8,19 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const validatedData = loginSchema.parse(body);
+    const db = getSupabaseAdmin() ?? supabase;
 
-    const { data: user, error } = await supabase
+    if (!db) {
+      return NextResponse.json(
+        {
+          error:
+            'Authentication backend is not configured. Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY in deployment environment variables.',
+        },
+        { status: 503 }
+      );
+    }
+
+    const { data: user, error } = await db
       .from('users')
       .select('id, name, email, password_hash, role, status')
       .eq('email', validatedData.email)

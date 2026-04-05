@@ -9,6 +9,16 @@ export async function POST(req: Request) {
     const body = await req.json();
     const validatedData = registerSchema.parse(body);
     const db = getSupabaseAdmin() ?? supabase;
+
+    if (!db) {
+      return NextResponse.json(
+        {
+          error:
+            'Registration backend is not configured. Add NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, and SUPABASE_SERVICE_ROLE_KEY in deployment environment variables.',
+        },
+        { status: 503 }
+      );
+    }
     const normalizedRole = 'client';
 
     // Check if user exists
