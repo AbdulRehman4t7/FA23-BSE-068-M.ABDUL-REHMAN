@@ -23,6 +23,8 @@ import { toast } from "sonner";
 
 const TITLE_MAX = 80;
 const DESC_MAX = 1000;
+const ADS_SYNC_KEY = "adflow:ads-updated";
+const LAST_CREATED_AD_KEY = "adflow:last-created-ad";
 
 function isValidUrl(url: string) {
   try { new URL(url); return true; } catch { return false; }
@@ -64,8 +66,14 @@ export default function NewAdPage() {
         }),
       });
 
+      const payload = await res.json().catch(() => ({} as any));
+
       if (!res.ok) {
-        const payload = await res.json();
+        if (res.status === 401) {
+          toast.error("Session expired. Please login again.");
+          router.push("/login");
+          return;
+        }
         const errorMsg = Array.isArray(payload.error) 
           ? payload.error[0]?.message || 'Validation error'
           : typeof payload.error === 'string'
@@ -76,7 +84,15 @@ export default function NewAdPage() {
       }
 
       toast.success("Draft created successfully!");
-      router.push("/dashboard/ads");
+      try {
+        const now = Date.now();
+        const ad = payload?.ad ?? null;
+        localStorage.setItem(LAST_CREATED_AD_KEY, JSON.stringify(ad));
+        localStorage.setItem(ADS_SYNC_KEY, String(now));
+        window.dispatchEvent(new CustomEvent(ADS_SYNC_KEY, { detail: { ts: now, ad } }));
+      } catch {}
+      const createdId = payload?.ad?.id;
+      router.push(createdId ? `/dashboard?createdAd=${encodeURIComponent(String(createdId))}` : "/dashboard");
     } finally {
       setSubmitting(false);
     }

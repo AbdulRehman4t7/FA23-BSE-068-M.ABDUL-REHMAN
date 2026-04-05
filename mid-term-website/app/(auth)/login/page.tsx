@@ -8,19 +8,47 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { toast } from "sonner"
 
 export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [rememberMe, setRememberMe] = useState(false)
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
   const router = useRouter()
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setIsLoading(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setIsLoading(false)
-    router.push("/dashboard")
+    if (!email || !password) return
+    try {
+      setIsLoading(true)
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        const msg = typeof data.error === "string" ? data.error : "Invalid credentials"
+        toast.error(msg)
+        return
+      }
+
+      if (data.token) {
+        try {
+          localStorage.setItem("token", data.token)
+        } catch {}
+      }
+
+      toast.success("Logged in successfully")
+      router.push("/dashboard")
+    } catch {
+      toast.error("Unable to login right now")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -33,7 +61,15 @@ export default function LoginPage() {
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
-          <Input id="email" type="email" placeholder="name@example.com" required disabled={isLoading} />
+          <Input
+            id="email"
+            type="email"
+            placeholder="name@example.com"
+            required
+            disabled={isLoading}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
 
         <div className="space-y-2">
@@ -50,6 +86,8 @@ export default function LoginPage() {
               placeholder="••••••••"
               required
               disabled={isLoading}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               className="pr-10"
             />
             <button
@@ -90,6 +128,14 @@ export default function LoginPage() {
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Don&apos;t have an account?{" "}
         <Link href="/register" className="text-primary hover:underline">Sign up</Link>
+      </p>
+      <p className="mt-2 text-center text-sm text-muted-foreground">
+        Admin access?{" "}
+        <Link href="/admin-login" className="text-primary hover:underline">Sign in as admin</Link>
+      </p>
+      <p className="mt-2 text-center text-sm text-muted-foreground">
+        Moderator access?{" "}
+        <Link href="/moderator-login" className="text-primary hover:underline">Sign in as moderator</Link>
       </p>
     </div>
   )

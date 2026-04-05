@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 
 const roleMenus = {
   client: [
@@ -28,13 +28,16 @@ const roleMenus = {
   ],
   moderator: [
     { href: "/moderator", label: "Overview", icon: ShieldCheck },
-    { href: "/moderator/review", label: "Review Queue", icon: Users },
+    { href: "/moderator/review", label: "Pending Ads", icon: Users },
+    { href: "/moderator/approved", label: "Approved Ads", icon: BarChart3 },
+    { href: "/moderator/rejected", label: "Rejected Ads", icon: List },
   ],
   admin: [
-    { href: "/admin", label: "Admin Home", icon: LayoutDashboard },
-    { href: "/admin/payments", label: "Payments", icon: CreditCard },
+    { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
     { href: "/admin/users", label: "Users", icon: Users },
+    { href: "/admin/ads", label: "Ads", icon: List },
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/admin/payments", label: "Payments", icon: CreditCard },
     { href: "/moderator/review", label: "Moderation", icon: ShieldCheck },
   ],
 } as const;
@@ -53,10 +56,16 @@ export default function DashboardLayout({
   const menu = role === "moderator" ? roleMenus.moderator : isAdmin ? roleMenus.admin : roleMenus.client;
 
   const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {}
+    try {
+      localStorage.removeItem('token');
+    } catch {}
     if (supabase) {
       await supabase.auth.signOut();
     }
-    router.push("/login");
+    router.push(isAdmin ? "/admin-login" : role === "moderator" ? "/moderator-login" : "/login");
   };
 
   return (
@@ -139,8 +148,18 @@ export default function DashboardLayout({
               <Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setOpen(true)}>
                 <Menu className="h-5 w-5" />
               </Button>
-              <div className="hidden rounded-full border border-border px-3 py-1 text-xs text-muted-foreground sm:block" title="All actions work but data may reset periodically. Sign up for a real account to keep your data.">
-                Demo mode — data may reset periodically
+              <div
+                className="hidden rounded-full border border-border px-3 py-1 text-xs text-muted-foreground sm:block"
+                title={
+                  isSupabaseConfigured
+                    ? "Live mode connected to Supabase database."
+                    : "Demo mode enabled. Data may reset periodically until Supabase env is configured."
+                }
+              >
+                {isSupabaseConfigured ? "Live mode — connected to database" : "Demo mode — data may reset periodically"}
+              </div>
+              <div className="hidden rounded-full border border-border px-3 py-1 text-xs font-medium text-foreground md:block">
+                {isAdmin ? "Admin" : role === "moderator" ? "Moderator" : "Client"} session
               </div>
               <Link href="/" className="text-sm font-medium text-primary">
                 Back to site

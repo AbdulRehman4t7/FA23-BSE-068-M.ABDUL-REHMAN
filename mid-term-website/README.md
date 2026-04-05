@@ -90,3 +90,44 @@ Follow these steps to run the project locally on your machine:
    npm run dev
    ```
    *The server will start locally. Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.*
+
+## Environment Variables
+
+Add these variables in your `.env.local` file:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+JWT_SECRET=...
+JWT_EXPIRES_IN=7d
+```
+
+Security notes:
+
+- Keep `SUPABASE_SERVICE_ROLE_KEY` server-only.
+- Never expose service role key in client components.
+- Use a long random value for `JWT_SECRET`.
+
+## Admin Module Setup
+
+1. Run the SQL migration from `db/admin-rbac-migration.sql` in Supabase SQL editor.
+2. Ensure admin accounts exist in `public.users` with `role = 'admin'` or `role = 'super_admin'`.
+3. Use `/admin-login` for admin authentication.
+4. Protected admin routes are under `/admin/*` and use server-side role checks plus client fallback validation.
+
+## Moderator Module Setup
+
+1. Run the SQL migration from `db/moderator-review-migration.sql` in Supabase SQL editor.
+2. Ensure moderator users exist in `public.users` with role `moderator` (admins are also allowed for moderation).
+3. Use `/moderator-login` for moderator authentication.
+4. Protected moderator routes are under `/moderator/*` with middleware + server-side layout checks.
+
+### Moderator Testing Checklist
+
+- Moderator login works with moderator/admin credentials.
+- Unauthorized users are redirected away from `/moderator/*`.
+- Pending queue loads ads for review.
+- Approve action saves `reviewed_by`, `reviewed_at`, and marks ad reviewed.
+- Reject action saves `review_note` and rejection metadata.
+- Filters for pending/approved/rejected work.

@@ -5,10 +5,12 @@ const next = require("next");
 
 const port = Number(process.env.PORT || 3000);
 const hostname = "127.0.0.1";
-const distDir = path.join(process.cwd(), ".next");
 
-if (fs.existsSync(distDir)) {
-  fs.rmSync(distDir, { recursive: true, force: true });
+for (const folder of [".next", ".next-dev"]) {
+  const fullPath = path.join(process.cwd(), folder);
+  if (fs.existsSync(fullPath)) {
+    fs.rmSync(fullPath, { recursive: true, force: true });
+  }
 }
 
 const app = next({ dev: true, dir: process.cwd(), hostname, port });

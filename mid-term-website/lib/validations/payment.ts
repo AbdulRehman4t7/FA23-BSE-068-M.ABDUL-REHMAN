@@ -9,7 +9,19 @@ export const submitPaymentSchema = z.object({
   method: z.string().min(1, 'Payment method is required'),
   transaction_ref: z.string().min(3, 'Transaction reference is too short'),
   sender_name: z.string().min(2, 'Sender name is required'),
-  screenshot_url: z.string().min(1).url('Invalid screenshot URL').optional(),
+  screenshot_url: z.preprocess(
+    (v) => {
+      if (typeof v !== 'string') return v;
+      const value = v.trim();
+      return value.length === 0 ? undefined : value;
+    },
+    z
+      .string()
+      .refine((value) => value.startsWith('http://') || value.startsWith('https://') || value.startsWith('data:image/'), {
+        message: 'Invalid screenshot URL',
+      })
+      .optional()
+  ),
 });
 
 export const updatePaymentStatusSchema = z.object({

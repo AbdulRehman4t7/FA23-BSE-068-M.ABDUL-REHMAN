@@ -15,7 +15,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { StatusBadge } from "@/components/status-badge";
-import { mockListClientDashboard, mockListClientPayments } from "@/lib/mock-db";
 import { CreditCard, Loader2, Receipt } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -44,7 +43,7 @@ export default function PaymentsPage() {
         const dashboardData = await dashboardRes.json();
         // Assuming dashboardData.ads contains the list of ads
         setPendingAds((dashboardData.ads || []).filter((ad: any) => 
-          ad.status === "payment_pending" || ad.status === "PAYMENT_PENDING"
+          String(ad.status || "").toLowerCase() === "payment_pending"
         ));
       }
       
@@ -64,22 +63,35 @@ export default function PaymentsPage() {
   // Auto-fill amount when ad is selected
   function handleAdSelect(adId: string) {
     const ad = pendingAds.find((a) => String(a.id) === adId);
-    const price = ad?.package?.price ?? "";
+    const price = ad?.packages?.price ?? "";
     setForm((prev) => ({ ...prev, ad_id: adId, amount: price ? String(price) : prev.amount }));
   }
 
   const totals = useMemo(() => ({
     spent: payments.reduce((sum, item) => sum + Number(item.amount || 0), 0),
-    pending: payments.filter((item) => item.status === "PENDING").reduce((sum, item) => sum + Number(item.amount || 0), 0),
+    pending: payments
+      .filter((item) => String(item.status || "").toLowerCase() === "pending")
+      .reduce((sum, item) => sum + Number(item.amount || 0), 0),
   }), [payments]);
 
   async function submitPayment() {
     setSubmitting(true);
     try {
+      const payloadBody = {
+        ad_id: String(form.ad_id || "").trim(),
+        amount: String(form.amount || "").trim(),
+        method: String(form.method || "").trim(),
+        transaction_ref: String(form.transaction_ref || "").trim(),
+        sender_name: String(form.sender_name || "").trim(),
+        ...(form.screenshot_url ? { screenshot_url: form.screenshot_url } : {}),
+      };
+
       const res = await fetch("/api/client/payments", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payloadBody),
       });
       const payload = await res.json();
       if (!res.ok) {
@@ -196,7 +208,7 @@ export default function PaymentsPage() {
                 {pendingAds.length ? pendingAds.map((ad) => (
                   <div key={ad.id} className="rounded-2xl border border-border p-4">
                     <p className="font-semibold">{ad.title}</p>
-                    <p className="text-sm text-muted-foreground">Ad ID: {ad.id} • Package: {ad.package.name}</p>
+                    <p className="text-sm text-muted-foreground">Ad ID: {ad.id} • Package: {ad.packages?.name ?? "-"}</p>
                   </div>
                 )) : <p className="text-sm text-muted-foreground">No ads currently waiting for payment.</p>}
               </CardContent>
@@ -219,7 +231,15 @@ export default function PaymentsPage() {
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="font-semibold">PKR {Number(payment.amount).toLocaleString()}</span>
-                      <StatusBadge status={payment.status === "VERIFIED" ? "payment_verified" : payment.status === "REJECTED" ? "rejected" : "payment_submitted"} />
+                      <StatusBadge
+                        status={
+                          String(payment.status || "").toLowerCase() === "verified"
+                            ? "payment_verified"
+                            : String(payment.status || "").toLowerCase() === "rejected"
+                              ? "rejected"
+                              : "payment_submitted"
+                        }
+                      />
                     </div>
                   </div>
                 ))}

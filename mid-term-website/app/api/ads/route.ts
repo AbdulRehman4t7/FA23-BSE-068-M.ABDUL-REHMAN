@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { mockListPublishedAds, type MockAd } from '@/lib/mock-db';
 
 function isDemoMode() {
@@ -41,7 +42,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ ads, meta: result.meta }, { status: 200 });
     }
 
-    let query = supabase
+    const db = getSupabaseAdmin() ?? supabase;
+
+    let query = db
       .from('ads')
       .select(`
         *,
@@ -50,7 +53,7 @@ export async function GET(req: Request) {
         packages!inner(id, name, weight, is_featured),
         ad_media(*)
       `)
-      .eq('status', 'PUBLISHED');
+      .eq('status', 'published');
 
     if (category) {
       query = query.eq('categories.slug', category);

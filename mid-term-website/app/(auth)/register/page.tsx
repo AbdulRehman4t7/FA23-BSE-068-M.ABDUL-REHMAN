@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Eye, EyeOff, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 function getPasswordStrength(pw: string): { score: number; label: string; color: string } {
   if (pw.length === 0) return { score: 0, label: "", color: "" }
@@ -29,6 +30,9 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [confirmTouched, setConfirmTouched] = useState(false)
+  const [firstName, setFirstName] = useState("")
+  const [lastName, setLastName] = useState("")
+  const [email, setEmail] = useState("")
   const router = useRouter()
 
   const strength = getPasswordStrength(password)
@@ -37,10 +41,44 @@ export default function RegisterPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!passwordsMatch) return
-    setIsLoading(true)
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    setIsLoading(false)
-    router.push("/dashboard")
+    if (!firstName || !lastName || !email) return
+
+    try {
+      setIsLoading(true)
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: `${firstName} ${lastName}`.trim(),
+          email,
+          password,
+        }),
+      })
+
+      const data = await res.json()
+      if (!res.ok) {
+        const msg = typeof data.error === "string"
+          ? data.error
+          : Array.isArray(data.error)
+            ? data.error[0]?.message || "Registration failed"
+            : "Registration failed"
+        toast.error(msg)
+        return
+      }
+
+      if (data.token) {
+        try {
+          localStorage.setItem("token", data.token)
+        } catch {}
+      }
+
+      toast.success("Account created successfully")
+      router.push("/dashboard")
+    } catch {
+      toast.error("Unable to register right now")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -54,17 +92,39 @@ export default function RegisterPage() {
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="firstName">First name <span className="text-destructive">*</span></Label>
-            <Input id="firstName" placeholder="John" required disabled={isLoading} />
+            <Input
+              id="firstName"
+              placeholder="John"
+              required
+              disabled={isLoading}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="lastName">Last name <span className="text-destructive">*</span></Label>
-            <Input id="lastName" placeholder="Doe" required disabled={isLoading} />
+            <Input
+              id="lastName"
+              placeholder="Doe"
+              required
+              disabled={isLoading}
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+            />
           </div>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="email">Email <span className="text-destructive">*</span></Label>
-          <Input id="email" type="email" placeholder="name@example.com" required disabled={isLoading} />
+          <Input
+            id="email"
+            type="email"
+            placeholder="name@example.com"
+            required
+            disabled={isLoading}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
 
         <div className="space-y-2">
@@ -156,6 +216,12 @@ export default function RegisterPage() {
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link href="/login" className="text-primary hover:underline">Sign in</Link>
+      </p>
+      <p className="mt-2 text-center text-sm text-muted-foreground">
+        Need role signup?{" "}
+        <Link href="/admin-register" className="text-primary hover:underline">Admin</Link>{" "}
+        or{" "}
+        <Link href="/moderator-register" className="text-primary hover:underline">Moderator</Link>
       </p>
     </div>
   )

@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { supabase } from '@/lib/supabase';
 import { loginSchema } from '@/lib/validations/auth';
-import { signToken } from '@/lib/auth';
+import { AUTH_COOKIE_NAME, signToken } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
@@ -34,11 +34,23 @@ export async function POST(req: Request) {
       role: user.role,
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: 'Login successful',
       user: { id: user.id, name: user.name, email: user.email, role: user.role },
       token,
     }, { status: 200 });
+
+    response.cookies.set({
+      name: AUTH_COOKIE_NAME,
+      value: token,
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return response;
 
   } catch (error: any) {
     if (error.name === 'ZodError') {

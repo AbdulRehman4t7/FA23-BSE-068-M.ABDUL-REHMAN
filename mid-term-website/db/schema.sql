@@ -1,14 +1,30 @@
-create type public.app_role as enum ('client', 'moderator', 'admin', 'super_admin');
-create type public.ad_status as enum ('draft', 'submitted', 'under_review', 'payment_pending', 'payment_submitted', 'payment_verified', 'scheduled', 'published', 'expired', 'archived', 'rejected');
-create type public.payment_status as enum ('pending', 'verified', 'rejected');
+do $$ begin
+  create type public.app_role as enum ('client', 'moderator', 'admin', 'super_admin');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.ad_status as enum ('draft', 'submitted', 'under_review', 'payment_pending', 'payment_submitted', 'payment_verified', 'scheduled', 'published', 'expired', 'archived', 'rejected');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type public.payment_status as enum ('pending', 'verified', 'rejected');
+exception when duplicate_object then null; end $$;
 
 create table if not exists public.users (
-  id uuid primary key,
+  id uuid primary key default gen_random_uuid(),
   email text unique not null,
+  name text not null,
+  password_hash text not null,
+  status text not null default 'ACTIVE',
   role public.app_role not null default 'client',
-  full_name text,
   created_at timestamptz not null default now()
 );
+
+-- Ensure existing users table (if created earlier) has the columns our auth code expects
+alter table if exists public.users
+  add column if not exists name text,
+  add column if not exists password_hash text,
+  add column if not exists status text not null default 'ACTIVE';
 
 create table if not exists public.seller_profiles (
   id uuid primary key default gen_random_uuid(),
@@ -63,6 +79,12 @@ create table if not exists public.ads (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table if exists public.ads
+  add column if not exists moderation_status text not null default 'pending',
+  add column if not exists reviewed_by uuid,
+  add column if not exists reviewed_at timestamptz,
+  add column if not exists review_note text;
 
 create table if not exists public.ad_media (
   id uuid primary key default gen_random_uuid(),

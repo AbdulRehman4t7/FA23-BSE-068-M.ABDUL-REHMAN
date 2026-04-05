@@ -17,6 +17,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, Plus, MoreHorizontal, Eye, Send, CreditCard, Clock } from "lucide-react";
 
+const ADS_SYNC_KEY = "adflow:ads-updated";
+const LAST_CREATED_AD_KEY = "adflow:last-created-ad";
+
+function readLastCreatedAd(): any | null {
+  try {
+    const raw = localStorage.getItem(LAST_CREATED_AD_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function mergeById<T extends { id: number }>(existing: T[], incoming: T[]) {
+  const byId = new Map<number, T>();
+  for (const item of existing || []) byId.set(item.id, item);
+  for (const item of incoming || []) byId.set(item.id, item);
+  return Array.from(byId.values());
+}
+
 type DashboardAd = {
   id: number;
   slug?: string;
@@ -38,28 +59,103 @@ export default function AdsPage() {
   async function loadAds() {
     setLoading(true);
     try {
-      const res = await fetch("/api/client/dashboard", { cache: "no-store", next: { revalidate: 0 } });
+      const res = await fetch("/api/client/dashboard", {
+        cache: "no-store",
+        next: { revalidate: 0 },
+      });
+      if (res.status === 401) {
+        setAdsList([]);
+        return;
+      }
       const json = await res.json();
-      const mapped = (json.ads || []).map((ad: any) => ({
-        id: ad.id,
-        slug: ad.slug,
-        title: ad.title,
-        status: String(ad.status || "draft").toLowerCase(),
-        package: (ad.packages?.name?.toLowerCase() || "basic") as PackageType,
-        views: ad.views ?? 0,
-        createdAt: ad.created_at ? new Date(ad.created_at).toLocaleDateString() : "-",
-        expiresAt: ad.expire_at ? new Date(ad.expire_at).toLocaleDateString() : "-",
-        category: ad.categories?.name || "Unknown",
-        city: ad.cities?.name || "Unknown",
-      }));
-      setAdsList(mapped);
+      const mapped: any[] = (json.ads || [])
+        .map((ad: any) => ({
+          id: ad.id,
+          slug: ad.slug,
+          title: ad.title,
+          status: String(ad.status || "draft").toLowerCase(),
+          package: (ad.packages?.name?.toLowerCase() || "basic") as PackageType,
+          views: ad.views ?? 0,
+          createdAt: ad.created_at ? new Date(ad.created_at).toLocaleDateString() : "-",
+          expiresAt: ad.expire_at ? new Date(ad.expire_at).toLocaleDateString() : "-",
+          category: ad.categories?.name || "Unknown",
+          city: ad.cities?.name || "Unknown",
+          _createdAtRaw: ad.created_at || null,
+        }))
+        .sort((a: any, b: any) => {
+          const aTime = a._createdAtRaw ? new Date(a._createdAtRaw).getTime() : 0;
+          const bTime = b._createdAtRaw ? new Date(b._createdAtRaw).getTime() : 0;
+          return bTime - aTime;
+        });
+      setAdsList((prev) => {
+        const merged = mergeById(prev, mapped as any);
+        return merged.sort((a: any, b: any) => {
+          const aTime = (a as any)._createdAtRaw ? new Date((a as any)._createdAtRaw).getTime() : 0;
+          const bTime = (b as any)._createdAtRaw ? new Date((b as any)._createdAtRaw).getTime() : 0;
+          return bTime - aTime;
+        });
+      });
     } finally {
       setLoading(false);
     }
   }
 
+  function prependOptimistic(ad: any) {
+    if (!ad?.id) return;
+    const mapped: any = {
+      id: ad.id,
+      slug: ad.slug,
+      title: ad.title,
+      status: String(ad.status || "draft").toLowerCase(),
+      package: (ad.packages?.name?.toLowerCase() || "basic") as PackageType,
+      views: ad.views ?? 0,
+      createdAt: ad.created_at ? new Date(ad.created_at).toLocaleDateString() : "-",
+      expiresAt: ad.expire_at ? new Date(ad.expire_at).toLocaleDateString() : "-",
+      category: ad.categories?.name || "Unknown",
+      city: ad.cities?.name || "Unknown",
+      _createdAtRaw: ad.created_at || null,
+    };
+    setAdsList((prev: any) => {
+      const merged = mergeById([mapped], prev || []);
+      return merged.sort((a: any, b: any) => {
+        const aTime = a._createdAtRaw ? new Date(a._createdAtRaw).getTime() : 0;
+        const bTime = b._createdAtRaw ? new Date(b._createdAtRaw).getTime() : 0;
+        return bTime - aTime;
+      });
+    });
+  }
+
   useEffect(() => {
+    const initialOptimistic = readLastCreatedAd();
+    if (initialOptimistic) prependOptimistic(initialOptimistic);
     loadAds();
+
+    const intervalId = window.setInterval(loadAds, 3000);
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === ADS_SYNC_KEY) {
+        const optimistic = readLastCreatedAd();
+        if (optimistic) prependOptimistic(optimistic);
+        loadAds();
+      }
+    };
+    const onAdsUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<any>)?.detail;
+      const optimistic = detail?.ad ?? readLastCreatedAd();
+      if (optimistic) prependOptimistic(optimistic);
+      loadAds();
+    };
+    const onFocus = () => loadAds();
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener(ADS_SYNC_KEY, onAdsUpdated as EventListener);
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(ADS_SYNC_KEY, onAdsUpdated as EventListener);
+      window.removeEventListener("focus", onFocus);
+    };
   }, []);
 
   const filteredAds = useMemo(
@@ -67,10 +163,12 @@ export default function AdsPage() {
     [adsList, searchQuery]
   );
 
-  async function transition(id: number, status: "SUBMITTED" | "PAYMENT_SUBMITTED") {
+  async function transition(id: number, status: "SUBMITTED") {
     await fetch(`/api/client/ads/${id}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ status }),
     });
     loadAds();
@@ -151,9 +249,11 @@ export default function AdsPage() {
                     </Button>
                   )}
                   {ad.status === "payment_pending" && (
-                    <Button variant="outline" onClick={() => transition(ad.id, "PAYMENT_SUBMITTED")}>
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Mark Payment Submitted
+                    <Button asChild variant="outline">
+                      <Link href="/dashboard/payments">
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        Submit Payment
+                      </Link>
                     </Button>
                   )}
                   <DropdownMenu>

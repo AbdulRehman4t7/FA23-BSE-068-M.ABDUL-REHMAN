@@ -643,10 +643,12 @@ export function mockSubmitPayment(input: { ad_id: number; amount: number; method
   if (!["payment_pending", "payment_submitted"].includes(ad.status)) return { ok: false, error: "Ad is not pending payment" as const };
   if (state.payments.some((payment) => payment.transaction_ref.toLowerCase() === input.transaction_ref.toLowerCase())) return { ok: false, error: "Transaction reference already used" as const };
 
-  const payment: MockPayment = { id: getNextId(state.payments), ad_id: input.ad_id, user_id: input.user_id, amount: input.amount, method: input.method, transaction_ref: input.transaction_ref, sender_name: input.sender_name, screenshot_url: input.screenshot_url, status: "PENDING", submitted_at: nowIso() };
+  const payment: MockPayment = { id: getNextId(state.payments), ad_id: input.ad_id, user_id: input.user_id, amount: input.amount, method: input.method, transaction_ref: input.transaction_ref, sender_name: input.sender_name, screenshot_url: input.screenshot_url, status: "VERIFIED", submitted_at: nowIso() };
   state.payments.unshift(payment);
-  if (ad.status !== "payment_submitted") transitionAd(ad, "payment_submitted", input.user_id, "Payment proof submitted");
-  addNotification(ad.user_id, "Payment received", `Payment proof for "${ad.title}" has been submitted.`, "success");
+  transitionAd(ad, "published", input.user_id, "Payment verified and ad activated");
+  ad.publish_at = nowIso();
+  ad.expire_at = addDaysIso(ad.package.duration_days);
+  addNotification(ad.user_id, "Ad is now live", `Payment verified for "${ad.title}" and ad is now active.`, "success");
   logAudit("payment", String(payment.id), "payment:submit", input.user_id, `Payment submitted for ad ${ad.id}`);
   return { ok: true, payment };
 }
@@ -654,10 +656,14 @@ export function mockSubmitPayment(input: { ad_id: number; amount: number; method
 export function mockListClientDashboard(input: { user_id: string }) {
   const ads = state.ads.filter((ad) => ad.user_id === input.user_id || input.user_id === "demo-user").sort((a, b) => b.created_at.localeCompare(a.created_at));
   const notifications = state.notifications.filter((item) => item.user_id === input.user_id).slice(0, 5);
+  const pendingReview = ads.filter((ad) => ["submitted", "under_review"].includes(ad.status)).length;
+  const pendingPayment = ads.filter((ad) => ["payment_pending", "payment_submitted"].includes(ad.status)).length;
   const stats = {
     total: ads.length,
     active: ads.filter((ad) => ad.status === "published").length,
-    pending: ads.filter((ad) => ["submitted", "under_review", "payment_pending", "payment_submitted"].includes(ad.status)).length,
+    pending_review: pendingReview,
+    pending_payment: pendingPayment,
+    pending: pendingReview,
     expired: ads.filter((ad) => ad.status === "expired").length,
   };
   return { ads, profile: getSellerByUserId(input.user_id), stats, notifications };

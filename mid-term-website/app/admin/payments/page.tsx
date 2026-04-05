@@ -11,14 +11,38 @@ import { Search, CheckCircle2, XCircle, Eye } from "lucide-react";
 
 export default function AdminPaymentsPage() {
   const [queue, setQueue] = useState<any[]>([]);
+  const [recentProcessed, setRecentProcessed] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>({
+    totalCount: 0,
+    totalAmount: 0,
+    verifiedCount: 0,
+    verifiedAmount: 0,
+    pendingCount: 0,
+    pendingAmount: 0,
+    rejectedCount: 0,
+    rejectedAmount: 0,
+  });
   const [selected, setSelected] = useState<any | null>(null);
   const [query, setQuery] = useState("");
   const [note, setNote] = useState("");
 
   async function loadQueue() {
-    const res = await fetch("/api/admin/payment-queue");
+    const res = await fetch("/api/admin/payment-queue", {
+      cache: "no-store",
+    });
     const data = await res.json();
     setQueue(data.queue || []);
+    setRecentProcessed(data.recentProcessed || []);
+    setSummary(data.summary || {
+      totalCount: 0,
+      totalAmount: 0,
+      verifiedCount: 0,
+      verifiedAmount: 0,
+      pendingCount: 0,
+      pendingAmount: 0,
+      rejectedCount: 0,
+      rejectedAmount: 0,
+    });
   }
 
   useEffect(() => {
@@ -34,7 +58,9 @@ export default function AdminPaymentsPage() {
     if (!selected) return;
     await fetch(`/api/admin/payments/${selected.id}/verify`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ status, note }),
     });
     setSelected(null);
@@ -57,8 +83,8 @@ export default function AdminPaymentsPage() {
 
         <div className="grid gap-4 md:grid-cols-3">
           <Card><CardContent className="p-6"><p className="text-sm text-muted-foreground">Pending Queue</p><p className="text-3xl font-bold">{queue.length}</p></CardContent></Card>
-          <Card><CardContent className="p-6"><p className="text-sm text-muted-foreground">Potential Revenue</p><p className="text-3xl font-bold">PKR {queue.reduce((sum, item) => sum + Number(item.amount || 0), 0).toLocaleString()}</p></CardContent></Card>
-          <Card><CardContent className="p-6"><p className="text-sm text-muted-foreground">Next step</p><p className="text-lg font-semibold">Verify then publish/schedule</p></CardContent></Card>
+          <Card><CardContent className="p-6"><p className="text-sm text-muted-foreground">Verified Revenue</p><p className="text-3xl font-bold">PKR {Number(summary.verifiedAmount || 0).toLocaleString()}</p></CardContent></Card>
+          <Card><CardContent className="p-6"><p className="text-sm text-muted-foreground">Processed Payments</p><p className="text-3xl font-bold">{Number(summary.totalCount || 0)}</p></CardContent></Card>
         </div>
 
         <div className="space-y-4">
@@ -80,6 +106,38 @@ export default function AdminPaymentsPage() {
           ))}
           {!filtered.length && <Card><CardContent className="p-8 text-center text-muted-foreground">No pending payments match your search.</CardContent></Card>}
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Processed Payments</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {recentProcessed.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No verified/rejected records yet.</p>
+            ) : (
+              recentProcessed.map((payment) => {
+                const normalized = String(payment.status || "").toLowerCase();
+                const statusText = normalized === "verified" ? "Verified" : "Rejected";
+                const statusClass = normalized === "verified"
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700"
+                  : "border-rose-500/30 bg-rose-500/10 text-rose-700";
+
+                return (
+                  <div key={payment.id} className="flex flex-col gap-3 rounded-xl border border-border p-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="font-semibold">{payment.ad?.title || `Ad #${payment.ad_id}`}</p>
+                      <p className="text-sm text-muted-foreground">{payment.sender_name} • {payment.transaction_ref}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-semibold">PKR {Number(payment.amount || 0).toLocaleString()}</span>
+                      <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${statusClass}`}>{statusText}</span>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <Dialog open={!!selected} onOpenChange={() => setSelected(null)}>

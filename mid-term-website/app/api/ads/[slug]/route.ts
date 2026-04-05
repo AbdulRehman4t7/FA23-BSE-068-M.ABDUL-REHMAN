@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { getSupabaseAdmin } from '@/lib/supabase';
 import { mockGetAdBySlug } from '@/lib/mock-db';
 
 function isDemoMode() {
@@ -29,7 +30,9 @@ export async function GET(req: Request, context: { params: { slug: string } }) {
       });
     }
 
-    const { data: ad, error } = await supabase
+    const db = getSupabaseAdmin() ?? supabase;
+
+    const { data: ad, error } = await db
       .from('ads')
       .select(`
         *,
@@ -40,7 +43,7 @@ export async function GET(req: Request, context: { params: { slug: string } }) {
         ad_media(*)
       `)
       .eq('slug', slug)
-      .eq('status', 'PUBLISHED')
+      .eq('status', 'published')
       .single();
 
     if (error || !ad) {

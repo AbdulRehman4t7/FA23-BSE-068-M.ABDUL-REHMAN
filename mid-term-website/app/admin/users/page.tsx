@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DashboardLayout from "@/components/dashboard/dashboard-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,47 +12,115 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { mockListAdminUsers } from "@/lib/mock-db";
-import { BadgeCheck, Eye, MoreHorizontal, Search, Shield, UserCog, Users } from "lucide-react";
+import { Search, Shield, UserCog, Users } from "lucide-react";
+import { toast } from "sonner";
+
+type AdminUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  status?: string;
+  created_at: string;
+};
+
+const roleOptions = ["CLIENT", "MODERATOR", "ADMIN", "SUPER_ADMIN"];
+
+function normalizeRole(role: string) {
+  return String(role || "").toUpperCase();
+}
 
 export default function AdminUsersPage() {
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
-  const users = mockListAdminUsers();
+  const [isLoading, setIsLoading] = useState(true);
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  async function loadUsers() {
+    try {
+      setIsLoading(true);
+      const res = await fetch("/api/admin/users", { cache: "no-store" });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to fetch users");
+      }
+
+      setUsers(data.users || []);
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to load users");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
   const filteredUsers = useMemo(() => {
     return users.filter((user) => {
-      const matchesSearch =
-        user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesRole = roleFilter === "all" || user.role.toLowerCase() === roleFilter;
+      const matchesSearch = [user.name, user.email]
+        .join(" ")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesRole = roleFilter === "all" || normalizeRole(user.role) === roleFilter;
       return matchesSearch && matchesRole;
     });
   }, [users, searchQuery, roleFilter]);
 
-  const stats = [
-    { label: "Total Users", value: users.length, icon: Users },
-    { label: "Verified Sellers", value: users.filter((user) => user.verifiedSeller).length, icon: BadgeCheck },
-    { label: "Moderators", value: users.filter((user) => user.role === "MODERATOR").length, icon: Shield },
-    { label: "Admins", value: users.filter((user) => ["ADMIN", "SUPER_ADMIN"].includes(user.role)).length, icon: UserCog },
-  ];
+  const stats = useMemo(
+    () => [
+      { label: "Total Users", value: users.length, icon: Users },
+      {
+        label: "Moderators",
+        value: users.filter((u) => normalizeRole(u.role) === "MODERATOR").length,
+        icon: Shield,
+      },
+      {
+        label: "Admins",
+        value: users.filter((u) => ["ADMIN", "SUPER_ADMIN"].includes(normalizeRole(u.role))).length,
+        icon: UserCog,
+      },
+    ],
+    [users]
+  );
+
+  async function updateUser(userId: string, payload: { role?: string; status?: string }) {
+    try {
+      setSavingId(userId);
+      const res = await fetch("/api/admin/users", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, ...payload }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to update user");
+      }
+
+      toast.success("User updated");
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, ...data.user } : u)));
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to update user");
+    } finally {
+      setSavingId(null);
+    }
+  }
 
   return (
     <DashboardLayout role="admin">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold">User Management</h1>
-          <p className="text-muted-foreground">RBAC directory for clients, moderators, admins, and super admins.</p>
+          <p className="text-muted-foreground">
+            Manage user roles and account status with server-validated RBAC controls.
+          </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {stats.map((stat) => (
             <Card key={stat.label}>
               <CardContent className="flex items-center gap-4 p-6">
@@ -60,7 +128,7 @@ export default function AdminUsersPage() {
                   <stat.icon className="h-5 w-5 text-primary" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold">{stat.value}</p>
+                  <p className="text-2xl font-bold">{isLoading ? "..." : stat.value}</p>
                   <p className="text-sm text-muted-foreground">{stat.label}</p>
                 </div>
               </CardContent>
@@ -76,7 +144,12 @@ export default function AdminUsersPage() {
             <div className="flex flex-col gap-4 sm:flex-row">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search by name or email" className="pl-10" />
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search by name or email"
+                  className="pl-10"
+                />
               </div>
               <Select value={roleFilter} onValueChange={setRoleFilter}>
                 <SelectTrigger className="w-full sm:w-52">
@@ -84,63 +157,76 @@ export default function AdminUsersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Roles</SelectItem>
-                  <SelectItem value="client">Client</SelectItem>
-                  <SelectItem value="moderator">Moderator</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="super_admin">Super Admin</SelectItem>
+                  {roleOptions.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {role}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-3">
-              {filteredUsers.map((user) => (
-                <div key={user.id} className="flex flex-col gap-4 rounded-2xl border border-border p-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
-                        {user.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="font-semibold">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
+              {!isLoading && filteredUsers.length === 0 && (
+                <div className="rounded-2xl border border-border p-6 text-center text-sm text-muted-foreground">
+                  No users found for current filters.
+                </div>
+              )}
+
+              {filteredUsers.map((user) => {
+                const currentRole = normalizeRole(user.role);
+                const isSaving = savingId === user.id;
+
+                return (
+                  <div
+                    key={user.id}
+                    className="flex flex-col gap-4 rounded-2xl border border-border p-4 md:flex-row md:items-center md:justify-between"
+                  >
+                    <div>
+                      <p className="font-semibold">{user.name || "Unnamed user"}</p>
+                      <p className="text-sm text-muted-foreground">{user.email}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Created: {new Date(user.created_at).toLocaleString()}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                      <Select
+                        value={currentRole}
+                        onValueChange={(nextRole) => updateUser(user.id, { role: nextRole })}
+                      >
+                        <SelectTrigger className="w-[180px]" disabled={isSaving}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {roleOptions.map((role) => (
+                            <SelectItem key={role} value={role}>
+                              {role}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <Button
+                        variant={String(user.status || "ACTIVE").toUpperCase() === "ACTIVE" ? "destructive" : "outline"}
+                        disabled={isSaving}
+                        onClick={() =>
+                          updateUser(user.id, {
+                            status:
+                              String(user.status || "ACTIVE").toUpperCase() === "ACTIVE"
+                                ? "SUSPENDED"
+                                : "ACTIVE",
+                          })
+                        }
+                      >
+                        {String(user.status || "ACTIVE").toUpperCase() === "ACTIVE"
+                          ? "Disable"
+                          : "Enable"}
+                      </Button>
                     </div>
                   </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    {/* Colored role badge */}
-                    {(() => {
-                      const roleColors: Record<string, string> = {
-                        CLIENT: "bg-slate-500/10 text-slate-600",
-                        MODERATOR: "bg-blue-500/10 text-blue-600",
-                        ADMIN: "bg-amber-500/10 text-amber-600",
-                        SUPER_ADMIN: "bg-red-500/10 text-red-600",
-                      };
-                      const color = roleColors[user.role] ?? "bg-muted text-muted-foreground";
-                      return (
-                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${color}`}>
-                          {user.role.replace("_", " ")}
-                        </span>
-                      );
-                    })()}
-                    <span className="rounded-full bg-secondary px-3 py-1 text-xs font-medium">{user.adsCount} ads</span>
-                    {user.verifiedSeller && <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-600">✓ Verified seller</span>}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem><Eye className="mr-2 h-4 w-4" />View profile</DropdownMenuItem>
-                        <DropdownMenuItem><UserCog className="mr-2 h-4 w-4" />Adjust role</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem><Shield className="mr-2 h-4 w-4" />Audit access</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

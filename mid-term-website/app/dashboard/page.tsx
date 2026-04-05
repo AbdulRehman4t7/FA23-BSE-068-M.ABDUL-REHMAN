@@ -18,6 +18,45 @@ import {
   Eye,
 } from "lucide-react"
 
+const ADS_SYNC_KEY = "adflow:ads-updated"
+const LAST_CREATED_AD_KEY = "adflow:last-created-ad"
+
+function readLastCreatedAd(): any | null {
+  try {
+    const raw = localStorage.getItem(LAST_CREATED_AD_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    return parsed && typeof parsed === "object" ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+function mapDashboardAd(ad: any) {
+  return {
+    id: ad.id,
+    title: ad.title,
+    status: String(ad.status || "draft").toLowerCase(),
+    package: (ad.packages?.name || "basic").toLowerCase(),
+    views: ad.views || 0,
+    date: ad.created_at ? new Date(ad.created_at).toLocaleDateString() : new Date().toLocaleDateString(),
+    created_at: ad.created_at || null,
+  }
+}
+
+function sortByCreatedAtDesc(a: any, b: any) {
+  const aTime = a.created_at ? new Date(a.created_at).getTime() : 0
+  const bTime = b.created_at ? new Date(b.created_at).getTime() : 0
+  return bTime - aTime
+}
+
+function mergeAdsById(existing: any[], incoming: any[]) {
+  const byId = new Map<number, any>()
+  for (const item of existing || []) byId.set(item.id, item)
+  for (const item of incoming || []) byId.set(item.id, item)
+  return Array.from(byId.values()).sort(sortByCreatedAtDesc)
+}
+
 const stats = [
   {
     label: "Active Ads",
@@ -108,34 +147,101 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchDashboard() {
+    let alive = true
+
+    async function fetchDashboard(showLoading = false) {
       try {
-        const token = localStorage.getItem('token')
+        if (showLoading) setLoading(true)
         const res = await fetch('/api/client/dashboard', {
-          headers: { 'Authorization': `Bearer ${token}` },
           cache: "no-store",
           next: { revalidate: 0 }
         })
-        if (res.ok) {
+        if (res.ok && alive) {
           const json = await res.json()
-          setData({
+          const mappedAds = json.ads?.length > 0 ? json.ads.map(mapDashboardAd).sort(sortByCreatedAtDesc) : []
+          setData((prev: any) => ({
             stats: json.stats,
-            ads: json.ads?.length > 0 ? json.ads.map((ad: any) => ({ id: ad.id, title: ad.title, status: String(ad.status || 'draft').toLowerCase(), package: (ad.packages?.name || 'basic').toLowerCase(), views: ad.views || 0, date: ad.created_at ? new Date(ad.created_at).toLocaleDateString() : new Date().toLocaleDateString() })) : [],
+            ads: mergeAdsById(prev?.ads || [], mappedAds),
             profile: json.profile
-          })
+          }))
         }
       } catch (err) {
         console.error("Dashboard fetch error:", err)
       } finally {
-        setLoading(false)
+        if (alive) setLoading(false)
       }
     }
-    fetchDashboard()
+
+    function prependOptimistic(ad: any) {
+      if (!ad?.id) return
+      const mapped = mapDashboardAd(ad)
+      setData((prev: any) => ({
+        ...prev,
+        ads: mergeAdsById([mapped], prev?.ads || []),
+      }))
+    }
+
+    const initialOptimistic = readLastCreatedAd()
+    if (initialOptimistic) prependOptimistic(initialOptimistic)
+
+    // Hard guarantee after redirect: if create page passed createdAd, fetch it and prepend.
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const createdAdId = params.get('createdAd')
+      if (createdAdId) {
+        ;(async () => {
+          try {
+            const res = await fetch(`/api/client/ads/${encodeURIComponent(createdAdId)}`, { cache: 'no-store' })
+            const json = await res.json().catch(() => ({} as any))
+            if (res.ok && json?.ad) {
+              try { localStorage.setItem(LAST_CREATED_AD_KEY, JSON.stringify(json.ad)) } catch {}
+              prependOptimistic(json.ad)
+            }
+          } catch {}
+          try {
+            params.delete('createdAd')
+            const next = params.toString()
+            const url = next ? `/dashboard?${next}` : '/dashboard'
+            window.history.replaceState({}, '', url)
+          } catch {}
+        })()
+      }
+    } catch {}
+    fetchDashboard(true)
+    const intervalId = window.setInterval(() => fetchDashboard(false), 3000)
+    const onFocus = () => fetchDashboard(false)
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === ADS_SYNC_KEY) {
+        const optimistic = readLastCreatedAd()
+        if (optimistic) prependOptimistic(optimistic)
+        fetchDashboard(false)
+      }
+    }
+    const onAdsUpdated = (event: Event) => {
+      const detail = (event as CustomEvent<any>)?.detail
+      const optimistic = detail?.ad ?? readLastCreatedAd()
+      if (optimistic) prependOptimistic(optimistic)
+      fetchDashboard(false)
+    }
+    window.addEventListener('focus', onFocus)
+    window.addEventListener('storage', onStorage)
+    window.addEventListener(ADS_SYNC_KEY, onAdsUpdated as EventListener)
+
+    return () => {
+      alive = false
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', onFocus)
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener(ADS_SYNC_KEY, onAdsUpdated as EventListener)
+    }
   }, [])
+
+  const pendingReviewCount = data.stats?.pending_review ?? data.stats?.pending ?? 0
+  const pendingPaymentCount = data.stats?.pending_payment ?? 0
 
   const displayStats = data.stats ? [
     { label: "Active Ads", value: data.stats.active, change: "Currently published", icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Pending Review", value: data.stats.pending, change: "Awaiting action", icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: "Pending Review", value: pendingReviewCount, change: "Awaiting moderator action", icon: Clock, color: "text-amber-500", bg: "bg-amber-500/10" },
     { label: "Total Ads", value: data.stats.total, change: "Lifetime submissions", icon: FileText, color: "text-primary", bg: "bg-primary/10" },
     { label: "Expired", value: data.stats.expired, change: "Can be renewed", icon: XCircle, color: "text-red-500", bg: "bg-red-500/10" }
   ] : stats
@@ -253,7 +359,7 @@ export default function DashboardPage() {
               </div>
               <div>
                 <p className="font-semibold">Pending Payments</p>
-                <p className="text-sm text-muted-foreground">{displayStats[1].value} awaiting verification</p>
+                <p className="text-sm text-muted-foreground">{pendingPaymentCount} awaiting verification</p>
               </div>
             </CardContent>
           </Card>
