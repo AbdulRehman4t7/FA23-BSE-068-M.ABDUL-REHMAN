@@ -1,10 +1,10 @@
 {
+  "/page": "app/page.js",
   "/dashboard/page": "app/dashboard/page.js",
+  "/api/auth/login/route": "app/api/auth/login/route.js",
   "/dashboard/ads/new/page": "app/dashboard/ads/new/page.js",
-  "/api/client/dashboard/route": "app/api/client/dashboard/route.js",
-  "/dashboard/ads/page": "app/dashboard/ads/page.js",
   "/api/client/ads/route": "app/api/client/ads/route.js",
+  "/api/client/dashboard/route": "app/api/client/dashboard/route.js",
   "/api/client/ads/[id]/route": "app/api/client/ads/[id]/route.js",
-  "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/(auth)/forgot-password/page": "app/(auth)/forgot-password/page.js"
+  "/(auth)/login/page": "app/(auth)/login/page.js"
 }
