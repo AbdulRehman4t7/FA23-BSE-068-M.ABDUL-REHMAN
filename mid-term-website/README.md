@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <a href="https://fa-23-bse-068-m-abdul-rehman.vercel.app/dashboard/ads/new" target="_blank">
+  <a href="https://fa-23-bse-068-m-abdul-rehman.vercel.app/" target="_blank">
     <img src="https://img.shields.io/badge/🚀_Live_Demo-View_Project-5C6BC0?style=for-the-badge" alt="Live Demo"/>
   </a>
   &nbsp;
