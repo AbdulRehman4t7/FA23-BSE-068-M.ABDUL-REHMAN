@@ -37,7 +37,7 @@
 
 ## 🌐 Live Demo
 
-> 🚀 **[View Live Project →](https://fa-23-bse-068-m-abdul-rehman.vercel.app/dashboard/ads/new)**
+> 🚀 **[View Live Project →](https://fa-23-bse-068-m-abdul-rehman.vercel.app/)**
 
 ## 🔐 Test Credentials
 
