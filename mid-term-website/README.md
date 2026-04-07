@@ -39,10 +39,37 @@
 
 > 🚀 **[View Live Project →](https://fa-23-bse-068-m-abdul-rehman.vercel.app/dashboard/ads/new)**
 
-<br/>
-CREDENTIALS<br>
-EMAIL: a03480748044@gmail.com<br>
-password: 00000000
+## 🔐 Test Credentials
+
+> ⚠️ **For demo/testing purposes only.** Do not use in production.
+
+<table>
+  <thead>
+    <tr>
+      <th>Role</th>
+      <th>Email</th>
+      <th>Password</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>👤 Client</td>
+      <td><code>a03480748044@gmail.com</code></td>
+      <td><code>00000000</code></td>
+    </tr>
+    <tr>
+      <td>🛡️ Admin</td>
+      <td><code>ahmarjutt@gmail.com</code></td>
+      <td><code>12345678</code></td>
+    </tr>
+    <tr>
+      <td>🔧 Moderator</td>
+      <td><code>mzohaib@gmail.com</code></td>
+      <td><code>11223344</code></td>
+    </tr>
+  </tbody>
+</table>
+
 
 ---
 
