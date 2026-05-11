@@ -1,0 +1,7 @@
+# Use this workspace to collaborate
+workspace:
+  id: 2f65f0ab-6f51-4414-885d-4f737a57bb7b
+
+localResources:
+  specs:
+    - ..\REST API IMPLEMENTATION\project\src\openapi.yaml
