@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "name": "committee-management-system",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/committee-management-system/browser",
+  "installCommand": "npm install",
+  "framework": "angular",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ]
+}
