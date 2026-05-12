@@ -3,6 +3,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { NotificationService } from '../../core/services/notification.service';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-notifications',
@@ -24,7 +25,7 @@ import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
                 <p class="text-xs text-slate-400 mt-1">{{ item.created_at | timeAgo }}</p>
               </div>
               @if (!item.is_read) {
-                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <button mat-button class="!text-amber-600" (click)="markRead(item.id)">Mark read</button>
               }
             </mat-card-content>
           </mat-card>
@@ -37,6 +38,7 @@ import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
 })
 export class NotificationsComponent {
   readonly notificationService = inject(NotificationService);
+  private readonly toastr = inject(ToastrService);
 
   constructor() {
     void this.notificationService.load();
@@ -45,5 +47,10 @@ export class NotificationsComponent {
 
   async markAllRead(): Promise<void> {
     await this.notificationService.markAllAsRead();
+    this.toastr.success('All notifications marked as read');
+  }
+
+  async markRead(notificationId: string): Promise<void> {
+    await this.notificationService.markAsRead(notificationId);
   }
 }

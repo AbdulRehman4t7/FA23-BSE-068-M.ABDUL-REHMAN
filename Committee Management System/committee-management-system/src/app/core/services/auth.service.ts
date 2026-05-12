@@ -94,6 +94,7 @@ export class AuthService {
   }
 
   async login(email: string, password: string, rememberMe: boolean): Promise<void> {
+    localStorage.setItem('remember-session', rememberMe ? 'true' : 'false');
     const { data, error } = await this.supabase.client.auth.signInWithPassword({ email, password });
     if (error) {
       throw error;
@@ -103,11 +104,6 @@ export class AuthService {
     }
     this.session.set(data.session);
     this.user.set(data.user);
-    if (!rememberMe) {
-      sessionStorage.setItem('sb-remember-me', 'false');
-    } else {
-      sessionStorage.setItem('sb-remember-me', 'true');
-    }
     await this.loadProfile();
     if (!this.isProfileComplete()) {
       await this.router.navigate(['/profile/complete']);

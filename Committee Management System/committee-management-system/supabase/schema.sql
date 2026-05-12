@@ -21,8 +21,9 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 do $$ begin
-  create type notification_type as enum ('turn_reminder', 'payment_due', 'new_committee', 'payment_confirmed', 'member_added');
+  create type notification_type as enum ('turn_reminder', 'payment_due', 'new_committee', 'payment_confirmed', 'member_added', 'committee_active');
 exception when duplicate_object then null; end $$;
+alter type notification_type add value if not exists 'committee_active';
 
 do $$ begin
   create type request_status as enum ('pending', 'approved', 'rejected');
@@ -146,6 +147,9 @@ alter table public.join_requests enable row level security;
 
 drop policy if exists "profiles own read" on public.profiles;
 create policy "profiles own read" on public.profiles for select using (auth.uid() = id);
+drop policy if exists "profiles public read" on public.profiles;
+create policy "profiles public read" on public.profiles for select
+using (auth.role() = 'authenticated');
 drop policy if exists "profiles own write" on public.profiles;
 create policy "profiles own write" on public.profiles for all using (auth.uid() = id) with check (auth.uid() = id);
 
@@ -210,6 +214,14 @@ with check (
 drop policy if exists "notifications own access" on public.notifications;
 create policy "notifications own access" on public.notifications for all
 using (auth.uid() = user_id) with check (auth.uid() = user_id);
+drop policy if exists "notifications creator insert" on public.notifications;
+create policy "notifications creator insert" on public.notifications for insert
+with check (
+  exists (
+    select 1 from public.committees c
+    where c.id = related_committee_id and c.creator_id = auth.uid()
+  )
+);
 
 drop policy if exists "join requester create/read" on public.join_requests;
 create policy "join requester create/read" on public.join_requests for all

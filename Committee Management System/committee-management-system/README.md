@@ -7,12 +7,13 @@ Production-focused rotating savings/BC management app using **Angular 17 standal
 - Supabase auth: signup, login, reset password, first-login profile completion
 - User profile: edit/view/public profile, reputation + badge display
 - Committee workflows: create, my committees, explore public committees, join request
-- Committee detail: progress, payout banner, timeline, payment grid
-- Payment management: payment log + mark payment with proof upload
+- Committee member management: add/search/invite by phone, assign slot/turn, remove before activation, approve/reject requests
+- Committee detail: progress, payout banner, next month preview, timeline, member payment grid
+- Payment management: payment log + mark payment with proof upload + notes + confirmation notifications
 - Notifications: realtime stream + unread badge + mark all as read
 - Route guards: auth + profile completion
 - Shared UI: navbar, sidebar, reputation badge, payment grid, progress stepper, member card
-- Tailwind + Angular Material themed app shell
+- Tailwind + Angular Material themed app shell, skeleton loaders, dark mode toggle
 
 ## Project Structure
 
@@ -53,6 +54,7 @@ src/app/
 5. Run SQL:
    - `supabase/schema.sql`
    - `supabase/seed.sql`
+   - If schema already existed, re-run `schema.sql` to apply enum/policy upgrades
 6. Start app:
    ```bash
    npm start
@@ -63,7 +65,7 @@ src/app/
 - Full schema SQL: `supabase/schema.sql`
   - tables, enums, constraints
   - RLS enabled on all required tables
-  - policies for creator/member/profile ownership rules
+  - policies for creator/member/profile access rules + notification inserts by creators
 - Seed data SQL: `supabase/seed.sql`
   - 5 sample users (profile rows)
   - 2 sample committees

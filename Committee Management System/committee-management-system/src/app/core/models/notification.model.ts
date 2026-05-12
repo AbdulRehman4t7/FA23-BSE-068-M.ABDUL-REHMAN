@@ -3,7 +3,8 @@ export type NotificationType =
   | 'payment_due'
   | 'new_committee'
   | 'payment_confirmed'
-  | 'member_added';
+  | 'member_added'
+  | 'committee_active';
 
 export interface AppNotification {
   id: string;

@@ -84,6 +84,10 @@ export class CreateCommitteeComponent {
     if (this.form.invalid) return;
     try {
       const { creator_turn_month, ...payload } = this.form.getRawValue();
+      if (!payload.payment_methods.length) {
+        this.toastr.error('Please select at least one payment method');
+        return;
+      }
       const committee = await this.committeeService.createCommittee(payload, creator_turn_month);
       this.toastr.success('Committee created');
       await this.router.navigate(['/committee', committee.id]);
