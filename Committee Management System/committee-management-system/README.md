@@ -2,6 +2,36 @@
 
 A full-stack rotating savings/BC (Committee) management system built with Angular 17+ and Supabase.
 
+## Outputs
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/7d3347fa-c8fb-4698-be51-280b0bfb9cf9" width="450" alt="Output 1"/>
+      <br/>
+      <b>Output 1</b>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/fde0c68a-001e-43e4-9e1a-10de65c74bc5" width="450" alt="Output 2"/>
+      <br/>
+      <b>Output 2</b>
+    </td>
+  </tr>
+</table>
+
+<br/>
+
+<img src="https://github.com/user-attachments/assets/84bdc5e6-ae01-4ab2-a645-22b85b36f2d5" width="400" alt="Output 3"/>
+<br/>
+<b>Output 3</b>
+
+</div>
+
+
+
+
 ## Features
 
 ### 🔐 Authentication
