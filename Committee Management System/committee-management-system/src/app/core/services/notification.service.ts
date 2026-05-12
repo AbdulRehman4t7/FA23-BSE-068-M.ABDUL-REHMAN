@@ -1,92 +1,147 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { RealtimeChannel } from '@supabase/supabase-js';
-import { AppNotification } from '../models/notification.model';
+import { Injectable, signal } from '@angular/core';
 import { SupabaseService } from './supabase.service';
-import { AuthService } from './auth.service';
+import { Notification, NotificationType } from '../models/notification.model';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class NotificationService {
-  readonly items = signal<AppNotification[]>([]);
-  readonly unreadCount = computed(() => this.items().filter((item) => !item.is_read).length);
-  private channel?: RealtimeChannel;
+  notifications = signal<Notification[]>([]);
+  unreadCount = signal(0);
+  private channel: RealtimeChannel | null = null;
 
-  constructor(
-    private readonly supabase: SupabaseService,
-    private readonly auth: AuthService
-  ) {}
+  constructor(private supabase: SupabaseService) {}
 
-  async load(): Promise<void> {
-    const userId = this.auth.user()?.id;
-    if (!userId) return;
-    await this.createUpcomingTurnReminder(userId);
+  async loadNotifications(userId: string): Promise<void> {
     const { data, error } = await this.supabase.client
       .from('notifications')
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    this.items.set((data ?? []) as AppNotification[]);
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('Error loading notifications:', error);
+      return;
+    }
+
+    this.notifications.set(data || []);
+    this.updateUnreadCount();
   }
 
-  startRealtime(): void {
-    const userId = this.auth.user()?.id;
-    if (!userId) return;
-    this.channel?.unsubscribe();
+  subscribeToNotifications(userId: string): void {
     this.channel = this.supabase.client
-      .channel(`notifications:${userId}`)
+      .channel('notifications')
       .on(
         'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`
+        },
         (payload) => {
-          this.items.update((current) => [payload.new as AppNotification, ...current]);
+          const newNotification = payload.new as Notification;
+          this.notifications.update(notifications => [newNotification, ...notifications]);
+          this.updateUnreadCount();
         }
       )
       .subscribe();
   }
 
-  async markAllAsRead(): Promise<void> {
-    const userId = this.auth.user()?.id;
-    if (!userId) return;
-    const { error } = await this.supabase.client.from('notifications').update({ is_read: true }).eq('user_id', userId).eq('is_read', false);
-    if (error) throw error;
-    this.items.update((items) => items.map((item) => ({ ...item, is_read: true })));
+  unsubscribeFromNotifications(): void {
+    if (this.channel) {
+      this.supabase.client.removeChannel(this.channel);
+      this.channel = null;
+    }
   }
 
   async markAsRead(notificationId: string): Promise<void> {
-    const { error } = await this.supabase.client.from('notifications').update({ is_read: true }).eq('id', notificationId);
-    if (error) throw error;
-    this.items.update((items) => items.map((item) => (item.id === notificationId ? { ...item, is_read: true } : item)));
+    const { error } = await this.supabase.client
+      .from('notifications')
+      .update({ is_read: true })
+      .eq('id', notificationId);
+
+    if (error) {
+      console.error('Error marking notification as read:', error);
+      return;
+    }
+
+    this.notifications.update(notifications =>
+      notifications.map(n => n.id === notificationId ? { ...n, is_read: true } : n)
+    );
+    this.updateUnreadCount();
   }
 
-  private async createUpcomingTurnReminder(userId: string): Promise<void> {
-    const memberships = await this.supabase.client
-      .from('committee_members')
-      .select('turn_month, committee:committees!inner(id,name,start_date,total_months,status)')
+  async markAllAsRead(userId: string): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('notifications')
+      .update({ is_read: true })
       .eq('user_id', userId)
-      .eq('status', 'active');
-    if (memberships.error) return;
+      .eq('is_read', false);
 
-    const now = new Date();
-    const reminders = (memberships.data ?? []).flatMap((row) => {
-      const committeeRecord = (row as { committee: { id: string; name: string; start_date: string; total_months: number; status: string } | Array<{ id: string; name: string; start_date: string; total_months: number; status: string }> }).committee;
-      const committee = Array.isArray(committeeRecord) ? committeeRecord[0] : committeeRecord;
-      if (!committee || committee.status !== 'active') return [];
-      const start = new Date(committee.start_date);
-      const monthsSinceStart = (now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth()) + 1;
-      const nextMonth = monthsSinceStart + 1;
-      const isTurnComing = nextMonth === row.turn_month;
-      const daysUntilNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1).getDate() - now.getDate();
-      if (!isTurnComing || daysUntilNextMonth > 3) return [];
-      return [{
+    if (error) {
+      console.error('Error marking all notifications as read:', error);
+      return;
+    }
+
+    this.notifications.update(notifications =>
+      notifications.map(n => ({ ...n, is_read: true }))
+    );
+    this.updateUnreadCount();
+  }
+
+  async createNotification(
+    userId: string,
+    title: string,
+    message: string,
+    type: NotificationType,
+    committeeId?: string
+  ): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('notifications')
+      .insert({
         user_id: userId,
-        title: 'Your turn is coming next month!',
-        message: `${committee.name}: you are scheduled for payout next month.`,
-        type: 'turn_reminder',
-        related_committee_id: committee.id
-      }];
-    });
+        title,
+        message,
+        type,
+        related_committee_id: committeeId
+      });
 
-    if (!reminders.length) return;
-    await this.supabase.client.from('notifications').insert(reminders);
+    if (error) {
+      console.error('Error creating notification:', error);
+    }
+  }
+
+  private updateUnreadCount(): void {
+    const count = this.notifications().filter(n => !n.is_read).length;
+    this.unreadCount.set(count);
+  }
+
+  getNotificationIcon(type: NotificationType): string {
+    const icons: { [key: string]: string } = {
+      'turn_reminder': 'event',
+      'payment_due': 'payment',
+      'new_committee': 'group_add',
+      'payment_confirmed': 'check_circle',
+      'member_added': 'person_add',
+      'join_request': 'mail',
+      'committee_active': 'celebration'
+    };
+    return icons[type] || 'notifications';
+  }
+
+  getNotificationColor(type: NotificationType): string {
+    const colors: { [key: string]: string } = {
+      'turn_reminder': 'text-blue-600',
+      'payment_due': 'text-orange-600',
+      'new_committee': 'text-green-600',
+      'payment_confirmed': 'text-green-600',
+      'member_added': 'text-blue-600',
+      'join_request': 'text-purple-600',
+      'committee_active': 'text-amber-600'
+    };
+    return colors[type] || 'text-gray-600';
   }
 }

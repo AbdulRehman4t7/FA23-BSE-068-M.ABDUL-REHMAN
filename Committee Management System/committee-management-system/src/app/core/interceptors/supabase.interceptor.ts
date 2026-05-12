@@ -1,10 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 
 export const supabaseInterceptor: HttpInterceptorFn = (req, next) => {
-  const request = req.clone({
-    setHeaders: {
-      'X-App-Client': 'committee-management-system'
-    }
-  });
-  return next(request);
+  // Add any custom headers or logic for Supabase requests
+  return next(req);
 };

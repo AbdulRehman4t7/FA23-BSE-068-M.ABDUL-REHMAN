@@ -1,15 +1,21 @@
-import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
-import { AuthService } from '../services/auth.service';
+import { Router, CanActivateFn } from '@angular/router';
+import { ProfileService } from '../services/profile.service';
 
-export const profileCompleteGuard: CanActivateFn = () => {
-  const auth = inject(AuthService);
+export const profileCompleteGuard: CanActivateFn = async () => {
+  const profileService = inject(ProfileService);
   const router = inject(Router);
-  if (!auth.isAuthenticated()) {
-    return router.parseUrl('/auth/login');
+
+  const profile = profileService.currentProfile();
+  
+  if (!profile) {
+    return true; // Let the route load, it will handle loading the profile
   }
-  if (auth.isProfileComplete()) {
-    return true;
+
+  if (!profileService.isProfileComplete(profile)) {
+    router.navigate(['/profile/complete']);
+    return false;
   }
-  return router.parseUrl('/profile/complete');
+
+  return true;
 };

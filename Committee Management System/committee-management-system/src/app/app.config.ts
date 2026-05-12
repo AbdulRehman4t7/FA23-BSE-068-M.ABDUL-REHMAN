@@ -1,17 +1,23 @@
-import { provideHttpClient, withInterceptors } from '@angular/common/http';
-import { ApplicationConfig } from '@angular/core';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideToastr } from 'ngx-toastr';
-import { supabaseInterceptor } from './core/interceptors/supabase.interceptor';
 
 import { routes } from './app.routes';
+import { supabaseInterceptor } from './core/interceptors/supabase.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideAnimations(),
-    provideToastr(),
-    provideHttpClient(withInterceptors([supabaseInterceptor]))
+    provideAnimationsAsync(),
+    provideHttpClient(withInterceptors([supabaseInterceptor])),
+    provideToastr({
+      timeOut: 3000,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true,
+      progressBar: true
+    })
   ]
 };

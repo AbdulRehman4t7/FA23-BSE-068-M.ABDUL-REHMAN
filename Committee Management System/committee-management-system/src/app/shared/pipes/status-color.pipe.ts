@@ -5,21 +5,22 @@ import { Pipe, PipeTransform } from '@angular/core';
   standalone: true
 })
 export class StatusColorPipe implements PipeTransform {
-  transform(status: string): string {
-    switch (status) {
-      case 'active':
-      case 'paid':
-      case 'approved':
-      case 'completed':
-        return 'text-green-600';
-      case 'pending':
-        return 'text-amber-500';
-      case 'overdue':
-      case 'rejected':
-      case 'cancelled':
-        return 'text-red-600';
-      default:
-        return 'text-slate-600';
+  transform(status: string, type: 'committee' | 'payment' = 'committee'): string {
+    if (type === 'committee') {
+      const colors: { [key: string]: string } = {
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'active': 'bg-green-100 text-green-800',
+        'completed': 'bg-blue-100 text-blue-800',
+        'cancelled': 'bg-red-100 text-red-800'
+      };
+      return colors[status] || 'bg-gray-100 text-gray-800';
+    } else {
+      const colors: { [key: string]: string } = {
+        'paid': 'bg-green-100 text-green-800',
+        'pending': 'bg-yellow-100 text-yellow-800',
+        'overdue': 'bg-red-100 text-red-800'
+      };
+      return colors[status] || 'bg-gray-100 text-gray-800';
     }
   }
 }

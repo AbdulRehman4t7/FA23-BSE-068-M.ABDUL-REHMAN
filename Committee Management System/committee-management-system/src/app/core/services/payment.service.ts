@@ -1,126 +1,151 @@
 import { Injectable } from '@angular/core';
-import { Payment } from '../models/payment.model';
 import { SupabaseService } from './supabase.service';
+import { Payment, PaymentGridData, MarkPaymentData } from '../models/payment.model';
 import { AuthService } from './auth.service';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class PaymentService {
   constructor(
-    private readonly supabase: SupabaseService,
-    private readonly auth: AuthService
+    private supabase: SupabaseService,
+    private auth: AuthService
   ) {}
 
   async getCommitteePayments(committeeId: string): Promise<Payment[]> {
     const { data, error } = await this.supabase.client
       .from('payments')
-      .select('*')
+      .select(`
+        *,
+        member:profiles!payments_member_id_fkey(full_name, avatar_url)
+      `)
       .eq('committee_id', committeeId)
-      .order('month_number', { ascending: true });
+      .order('month_number')
+      .order('member_id');
+
     if (error) throw error;
-    return (data ?? []) as Payment[];
+    return data || [];
   }
 
-  async ensurePaymentGridRows(committeeId: string, totalMonths: number): Promise<void> {
+  async getPaymentGridData(committeeId: string): Promise<PaymentGridData[]> {
+    // Get members
     const { data: members, error: membersError } = await this.supabase.client
       .from('committee_members')
-      .select('user_id,status')
+      .select(`
+        user_id,
+        slot_number,
+        turn_month,
+        profile:profiles(full_name, avatar_url)
+      `)
       .eq('committee_id', committeeId)
-      .eq('status', 'active');
+      .eq('status', 'active')
+      .order('slot_number');
+
     if (membersError) throw membersError;
 
-    const { data: existingPayments, error: existingError } = await this.supabase.client
-      .from('payments')
-      .select('member_id,month_number')
-      .eq('committee_id', committeeId);
-    if (existingError) throw existingError;
+    // Get payments
+    const payments = await this.getCommitteePayments(committeeId);
 
-    const existing = new Set((existingPayments ?? []).map((p) => `${p.member_id}-${p.month_number}`));
-    const rows: Array<{ committee_id: string; member_id: string; month_number: number; amount: number; status: 'pending' }> = [];
+    // Build grid data
+    return (members || []).map((member: any) => {
+      const memberPayments = payments.filter(p => p.member_id === member.user_id);
+      const paymentsMap: { [month: number]: Payment } = {};
+      
+      memberPayments.forEach(payment => {
+        paymentsMap[payment.month_number] = payment;
+      });
 
-    for (const member of members ?? []) {
-      for (let month = 1; month <= totalMonths; month += 1) {
-        const key = `${member.user_id}-${month}`;
-        if (!existing.has(key)) {
-          rows.push({
-            committee_id: committeeId,
-            member_id: member.user_id as string,
-            month_number: month,
-            amount: 0,
-            status: 'pending'
-          });
-        }
-      }
-    }
-
-    if (!rows.length) return;
-    const insert = await this.supabase.client.from('payments').insert(rows);
-    if (insert.error) throw insert.error;
+      return {
+        member_id: member.user_id,
+        member_name: member.profile?.full_name || 'Unknown',
+        avatar_url: member.profile?.avatar_url,
+        slot_number: member.slot_number,
+        turn_month: member.turn_month,
+        payments: paymentsMap
+      };
+    });
   }
 
-  async markAsPaid(payload: {
-    committee_id: string;
-    member_id: string;
-    month_number: number;
-    amount: number;
-    method: 'bank' | 'jazzcash' | 'easypaisa';
-    transaction_reference: string;
-    notes?: string;
-    proofFile?: File;
-  }): Promise<void> {
-    const userId = this.auth.user()?.id;
+  async markPaymentAsPaid(
+    paymentId: string,
+    data: MarkPaymentData
+  ): Promise<void> {
+    const userId = this.auth.getUserId();
     if (!userId) throw new Error('User not authenticated');
 
-    let proofUrl: string | null = null;
-    if (payload.proofFile) {
-      const filePath = `payment-proofs/${payload.committee_id}-${payload.member_id}-${Date.now()}-${payload.proofFile.name}`;
-      const upload = await this.supabase.client.storage.from('payment-proofs').upload(filePath, payload.proofFile, { upsert: true });
-      if (upload.error) throw upload.error;
-      proofUrl = this.supabase.client.storage.from('payment-proofs').getPublicUrl(filePath).data.publicUrl;
-    }
-
-    const { error } = await this.supabase.client.from('payments').upsert({
-      committee_id: payload.committee_id,
-      member_id: payload.member_id,
-      month_number: payload.month_number,
-      amount: payload.amount,
-      payment_date: new Date().toISOString(),
-      method: payload.method,
-      transaction_reference: payload.transaction_reference,
-      proof_url: proofUrl,
-      status: 'paid',
-      confirmed_by: userId,
-      confirmed_at: new Date().toISOString(),
-      notes: payload.notes ?? null
-    });
-    if (error) throw error;
-
-    await this.supabase.client.from('notifications').insert({
-      user_id: payload.member_id,
-      title: 'Your payment has been confirmed',
-      message: `Payment for month ${payload.month_number} has been confirmed by committee creator.`,
-      type: 'payment_confirmed',
-      related_committee_id: payload.committee_id
-    });
-  }
-
-  async markPendingOverdue(committeeId: string, monthNumber: number, memberId: string, overdue: boolean): Promise<void> {
     const { error } = await this.supabase.client
       .from('payments')
-      .update({ status: overdue ? 'overdue' : 'pending' })
-      .eq('committee_id', committeeId)
-      .eq('month_number', monthNumber)
-      .eq('member_id', memberId);
+      .update({
+        status: 'paid',
+        payment_date: data.payment_date,
+        method: data.method,
+        transaction_reference: data.transaction_reference,
+        proof_url: data.proof_url,
+        notes: data.notes,
+        confirmed_by: userId,
+        confirmed_at: new Date().toISOString()
+      })
+      .eq('id', paymentId);
+
     if (error) throw error;
   }
 
-  async sendPaymentReminder(payload: { userId: string; committeeId: string; committeeName: string; monthNumber: number }): Promise<void> {
-    const { error } = await this.supabase.client.from('notifications').insert({
-      user_id: payload.userId,
-      title: `Payment due for ${payload.committeeName} — Month ${payload.monthNumber}`,
-      message: 'Please submit your monthly committee amount.',
-      type: 'payment_due',
-      related_committee_id: payload.committeeId
-    });
+  async uploadPaymentProof(file: File, committeeId: string, paymentId: string): Promise<string> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${committeeId}-${paymentId}-${Date.now()}.${fileExt}`;
+    const filePath = `payment-proofs/${fileName}`;
+
+    const { error: uploadError } = await this.supabase.storage
+      .from('payments')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = this.supabase.storage
+      .from('payments')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  }
+
+  async getMemberPayments(committeeId: string, memberId: string): Promise<Payment[]> {
+    const { data, error } = await this.supabase.client
+      .from('payments')
+      .select('*')
+      .eq('committee_id', committeeId)
+      .eq('member_id', memberId)
+      .order('month_number');
+
     if (error) throw error;
+    return data || [];
+  }
+
+  async updateOverduePayments(committeeId: string, currentMonth: number): Promise<void> {
+    const { error } = await this.supabase.client
+      .from('payments')
+      .update({ status: 'overdue' })
+      .eq('committee_id', committeeId)
+      .lt('month_number', currentMonth)
+      .eq('status', 'pending');
+
+    if (error) throw error;
+  }
+
+  getPaymentStatusColor(status: string): string {
+    const colors: { [key: string]: string } = {
+      'paid': 'text-green-600',
+      'pending': 'text-yellow-600',
+      'overdue': 'text-red-600'
+    };
+    return colors[status] || 'text-gray-600';
+  }
+
+  getPaymentStatusIcon(status: string): string {
+    const icons: { [key: string]: string } = {
+      'paid': 'check_circle',
+      'pending': 'schedule',
+      'overdue': 'error'
+    };
+    return icons[status] || 'help';
   }
 }

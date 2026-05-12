@@ -1,27 +1,232 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
-@import 'ngx-toastr/toastr';
+/* Import Angular Material theme */
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
 
+/* Import Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  height: 100%;
+/* Import Toastr styles */
+@import 'ngx-toastr/toastr';
+
+/* Global styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  font-family: Inter, sans-serif;
-  background-color: #f8fafc;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f9fafb;
   color: #0f172a;
 }
 
-.dark body {
-  background-color: #0f172a;
-  color: #f8fafc;
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.font-heading {
-  font-family: Poppins, sans-serif;
+/* Custom Material theme overrides */
+.mat-mdc-raised-button.mat-primary {
+  --mdc-protected-button-container-color: #f59e0b;
+  --mdc-protected-button-label-text-color: white;
+}
+
+.mat-mdc-raised-button.mat-primary:hover {
+  --mdc-protected-button-container-color: #d97706;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Utility classes */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Card hover effects */
+.mat-mdc-card {
+  transition: all 0.3s ease;
+}
+
+.mat-mdc-card:hover {
+  transform: translateY(-2px);
+}
+
+/* Loading spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Badge styles */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Status colors */
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-completed {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.status-cancelled {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Payment status */
+.payment-paid {
+  color: #059669;
+}
+
+.payment-pending {
+  color: #d97706;
+}
+
+.payment-overdue {
+  color: #dc2626;
+}
+
+/* Reputation badge colors */
+.badge-new {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.badge-trusted {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.badge-verified {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.badge-elite {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+}
+
+/* Material form field customization */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+/* Toastr customization */
+.toast-success {
+  background-color: #059669 !important;
+}
+
+.toast-error {
+  background-color: #dc2626 !important;
+}
+
+.toast-info {
+  background-color: #3b82f6 !important;
+}
+
+.toast-warning {
+  background-color: #f59e0b !important;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Grid layout for payment grid */
+.payment-grid {
+  display: grid;
+  gap: 1rem;
+  overflow-x: auto;
+}
+
+.payment-cell {
+  min-width: 60px;
+  padding: 0.5rem;
+  text-align: center;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }

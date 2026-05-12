@@ -1,66 +1,157 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
 import { AuthService } from '../../core/services/auth.service';
-import { ReputationBadgeComponent } from '../../shared/components/reputation-badge.component';
 import { ProfileService } from '../../core/services/profile.service';
+import { UserProfile } from '../../core/models/user.model';
+import { ReputationBadgeComponent } from '../../shared/components/reputation-badge.component';
 
 @Component({
   selector: 'app-profile-view',
   standalone: true,
-  imports: [RouterLink, MatCardModule, MatButtonModule, ReputationBadgeComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDividerModule,
+    ReputationBadgeComponent
+  ],
   template: `
-    @if (auth.profile(); as profile) {
-      <div class="space-y-4">
+    <div class="max-w-4xl mx-auto py-8">
+      @if (profile(); as prof) {
         <mat-card>
-          <mat-card-content class="!p-6">
-            <div class="flex flex-wrap items-center gap-4">
-              <img [src]="profile.avatar_url || 'https://placehold.co/120x120'" alt="avatar" class="w-24 h-24 rounded-full object-cover" />
-              <div class="space-y-1">
-                <h1 class="font-heading text-2xl">{{ profile.full_name }}</h1>
-                <p class="text-slate-500">{{ profile.phone }}</p>
-                <app-reputation-badge [score]="profile.reputation_score" [badge]="profile.badge" />
+          <mat-card-header class="flex items-center gap-4 mb-6">
+            @if (prof.avatar_url) {
+              <img [src]="prof.avatar_url" class="w-24 h-24 rounded-full" [alt]="prof.full_name">
+            } @else {
+              <div class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                <mat-icon class="text-5xl text-gray-400">person</mat-icon>
+              </div>
+            }
+            <div class="flex-1">
+              <mat-card-title class="text-2xl">{{ prof.full_name }}</mat-card-title>
+              <mat-card-subtitle>
+                <app-reputation-badge [score]="prof.reputation_score" [badge]="prof.badge"></app-reputation-badge>
+              </mat-card-subtitle>
+            </div>
+            <button mat-raised-button color="primary" routerLink="/profile/edit">
+              <mat-icon>edit</mat-icon>
+              Edit Profile
+            </button>
+          </mat-card-header>
+
+          <mat-card-content>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <!-- Contact Information -->
+              <div>
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <mat-icon>contact_phone</mat-icon>
+                  Contact Information
+                </h3>
+                <div class="space-y-3">
+                  <div>
+                    <p class="text-sm text-gray-600">Phone</p>
+                    <p class="font-medium">{{ prof.phone }}</p>
+                  </div>
+                  @if (prof.cnic) {
+                    <div>
+                      <p class="text-sm text-gray-600">CNIC</p>
+                      <p class="font-medium">{{ prof.cnic }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Bank Details -->
+              <div>
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <mat-icon>account_balance</mat-icon>
+                  Bank Details
+                </h3>
+                <div class="space-y-3">
+                  @if (prof.bank_name) {
+                    <div>
+                      <p class="text-sm text-gray-600">Bank Name</p>
+                      <p class="font-medium">{{ prof.bank_name }}</p>
+                    </div>
+                  }
+                  @if (prof.iban) {
+                    <div>
+                      <p class="text-sm text-gray-600">IBAN</p>
+                      <p class="font-medium">{{ prof.iban }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Mobile Wallet -->
+              <div>
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <mat-icon>phone_android</mat-icon>
+                  Mobile Wallet
+                </h3>
+                <div class="space-y-3">
+                  @if (prof.jazzcash_number) {
+                    <div>
+                      <p class="text-sm text-gray-600">JazzCash</p>
+                      <p class="font-medium">{{ prof.jazzcash_number }}</p>
+                    </div>
+                  }
+                  @if (prof.easypaisa_number) {
+                    <div>
+                      <p class="text-sm text-gray-600">Easypaisa</p>
+                      <p class="font-medium">{{ prof.easypaisa_number }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Statistics -->
+              <div>
+                <h3 class="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <mat-icon>analytics</mat-icon>
+                  Statistics
+                </h3>
+                <div class="space-y-3">
+                  <div>
+                    <p class="text-sm text-gray-600">Reputation Score</p>
+                    <p class="font-medium">{{ prof.reputation_score.toFixed(1) }} / 5.0</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-600">Committees Completed</p>
+                    <p class="font-medium">{{ prof.total_committees_completed }}</p>
+                  </div>
+                  <div>
+                    <p class="text-sm text-gray-600">Member Since</p>
+                    <p class="font-medium">{{ prof.created_at | date:'MMM d, y' }}</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div class="grid md:grid-cols-2 gap-3 mt-6 text-sm">
-              <p><strong>IBAN:</strong> {{ profile.iban || '-' }}</p>
-              <p><strong>Bank:</strong> {{ profile.bank_name || '-' }}</p>
-              <p><strong>JazzCash:</strong> {{ profile.jazzcash_number || '-' }}</p>
-              <p><strong>Easypaisa:</strong> {{ profile.easypaisa_number || '-' }}</p>
-            </div>
-            <a mat-raised-button class="mt-5 !bg-navy !text-white" routerLink="/profile/edit">Edit Profile</a>
           </mat-card-content>
         </mat-card>
-
-        <mat-card>
-          <mat-card-content class="!p-6">
-            <h2 class="font-semibold mb-3">Committee History</h2>
-            <div class="grid md:grid-cols-4 gap-3 text-sm">
-              <div class="rounded-lg bg-slate-100 p-3"><p class="text-slate-500">Created</p><p class="text-xl font-semibold">{{ history.created }}</p></div>
-              <div class="rounded-lg bg-slate-100 p-3"><p class="text-slate-500">Joined</p><p class="text-xl font-semibold">{{ history.joined }}</p></div>
-              <div class="rounded-lg bg-slate-100 p-3"><p class="text-slate-500">Completed</p><p class="text-xl font-semibold">{{ history.completed }}</p></div>
-              <div class="rounded-lg bg-slate-100 p-3"><p class="text-slate-500">In Progress</p><p class="text-xl font-semibold">{{ history.inProgress }}</p></div>
-            </div>
-          </mat-card-content>
-        </mat-card>
-      </div>
-    }
+      }
+    </div>
   `
 })
-export class ProfileViewComponent {
-  readonly auth = inject(AuthService);
-  private readonly profileService = inject(ProfileService);
-  history = { created: 0, joined: 0, completed: 0, inProgress: 0 };
+export class ProfileViewComponent implements OnInit {
+  profile = this.profileService.currentProfile;
 
-  constructor() {
-    const userId = this.auth.user()?.id;
-    if (userId) void this.loadHistory(userId);
-  }
+  constructor(
+    private authService: AuthService,
+    private profileService: ProfileService
+  ) {}
 
-  async loadHistory(userId: string): Promise<void> {
-    await this.profileService.recalculateReputation(userId);
-    await this.auth.loadProfile();
-    this.history = await this.profileService.getCommitteeHistory(userId);
+  async ngOnInit() {
+    const userId = this.authService.getUserId();
+    if (userId && !this.profile()) {
+      await this.profileService.loadCurrentProfile(userId);
+    }
   }
 }

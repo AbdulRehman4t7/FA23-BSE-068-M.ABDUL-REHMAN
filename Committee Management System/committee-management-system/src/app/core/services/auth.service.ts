@@ -1,145 +1,110 @@
-import { Injectable, computed, effect, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Session, User } from '@supabase/supabase-js';
 import { SupabaseService } from './supabase.service';
-import { UserProfile } from '../models/user.model';
+import { User } from '@supabase/supabase-js';
 
-export interface SignUpPayload {
-  fullName: string;
-  email: string;
-  password: string;
-  phone: string;
-  cnic?: string;
-  avatarFile?: File;
-}
-
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class AuthService {
-  readonly session = signal<Session | null>(null);
-  readonly user = signal<User | null>(null);
-  readonly profile = signal<UserProfile | null>(null);
-  readonly isAuthenticated = computed(() => !!this.user());
-  readonly isProfileComplete = computed(() => {
-    const profile = this.profile();
-    return !!profile?.phone && !!profile?.full_name;
-  });
+  currentUser = signal<User | null>(null);
+  loading = signal(true);
 
   constructor(
-    private readonly supabase: SupabaseService,
-    private readonly router: Router
+    private supabase: SupabaseService,
+    private router: Router
   ) {
-    this.restoreSession();
-    this.supabase.client.auth.onAuthStateChange((_event, session) => {
-      this.session.set(session);
-      this.user.set(session?.user ?? null);
-      void this.loadProfile();
-    });
+    this.initAuth();
+  }
 
-    effect(() => {
-      if (!this.user()) {
-        this.profile.set(null);
-      }
+  private async initAuth() {
+    const { data: { session } } = await this.supabase.auth.getSession();
+    this.currentUser.set(session?.user ?? null);
+    this.loading.set(false);
+
+    this.supabase.auth.onAuthStateChange((_event: string, session: any) => {
+      this.currentUser.set(session?.user ?? null);
     });
   }
 
-  private async restoreSession(): Promise<void> {
-    const { data } = await this.supabase.client.auth.getSession();
-    this.session.set(data.session);
-    this.user.set(data.session?.user ?? null);
-    await this.loadProfile();
-  }
-
-  async signUp(payload: SignUpPayload): Promise<void> {
-    const { data, error } = await this.supabase.client.auth.signUp({
-      email: payload.email,
-      password: payload.password,
+  async signUp(email: string, password: string, fullName: string, phone: string) {
+    const { data, error } = await this.supabase.auth.signUp({
+      email,
+      password,
       options: {
         data: {
-          full_name: payload.fullName,
-          phone: payload.phone,
-          cnic: payload.cnic ?? null
+          full_name: fullName,
+          phone: phone
         }
       }
     });
-    if (error) {
-      throw error;
-    }
-    const user = data.user;
-    if (!user) {
-      return;
-    }
 
-    let avatarUrl: string | null = null;
-    if (payload.avatarFile) {
-      const filePath = `avatars/${user.id}-${Date.now()}-${payload.avatarFile.name}`;
-      const upload = await this.supabase.client.storage
-        .from('profile-photos')
-        .upload(filePath, payload.avatarFile, { upsert: true });
-      if (upload.error) {
-        throw upload.error;
-      }
-      avatarUrl = this.supabase.client.storage.from('profile-photos').getPublicUrl(filePath).data.publicUrl;
-    }
+    if (error) throw error;
+    return data;
+  }
 
-    const upsert = await this.supabase.client.from('profiles').upsert({
-      id: user.id,
-      full_name: payload.fullName,
-      phone: payload.phone,
-      cnic: payload.cnic ?? null,
-      avatar_url: avatarUrl
+  async signIn(email: string, password: string, rememberMe: boolean = false) {
+    const { data, error } = await this.supabase.auth.signInWithPassword({
+      email,
+      password
     });
-    if (upsert.error) {
-      throw upsert.error;
+
+    if (error) throw error;
+    
+    if (rememberMe) {
+      localStorage.setItem('rememberMe', 'true');
     }
+
+    return data;
   }
 
-  async login(email: string, password: string, rememberMe: boolean): Promise<void> {
-    localStorage.setItem('remember-session', rememberMe ? 'true' : 'false');
-    const { data, error } = await this.supabase.client.auth.signInWithPassword({ email, password });
-    if (error) {
-      throw error;
-    }
-    if (!data.session) {
-      throw new Error('Please verify your email before logging in.');
-    }
-    this.session.set(data.session);
-    this.user.set(data.user);
-    await this.loadProfile();
-    if (!this.isProfileComplete()) {
-      await this.router.navigate(['/profile/complete']);
-      return;
-    }
-    await this.router.navigate(['/dashboard']);
+  async signOut() {
+    const { error } = await this.supabase.auth.signOut();
+    if (error) throw error;
+    
+    localStorage.removeItem('rememberMe');
+    this.router.navigate(['/auth/login']);
   }
 
-  async logout(): Promise<void> {
-    const { error } = await this.supabase.client.auth.signOut();
-    if (error) {
-      throw error;
-    }
-    this.user.set(null);
-    this.profile.set(null);
-    await this.router.navigate(['/auth/login']);
-  }
-
-  async resetPassword(email: string): Promise<void> {
-    const { error } = await this.supabase.client.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/login`
+  async resetPassword(email: string) {
+    const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`
     });
-    if (error) {
-      throw error;
-    }
+
+    if (error) throw error;
   }
 
-  async loadProfile(): Promise<void> {
-    const userId = this.user()?.id;
-    if (!userId) {
-      return;
-    }
-    const { data, error } = await this.supabase.client.from('profiles').select('*').eq('id', userId).single();
-    if (error) {
-      return;
-    }
-    this.profile.set(data as UserProfile);
+  async updatePassword(newPassword: string) {
+    const { error } = await this.supabase.auth.updateUser({
+      password: newPassword
+    });
+
+    if (error) throw error;
+  }
+
+  async uploadAvatar(file: File, userId: string): Promise<string> {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userId}-${Date.now()}.${fileExt}`;
+    const filePath = `avatars/${fileName}`;
+
+    const { error: uploadError } = await this.supabase.storage
+      .from('profiles')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data } = this.supabase.storage
+      .from('profiles')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  }
+
+  isAuthenticated(): boolean {
+    return this.currentUser() !== null;
+  }
+
+  getUserId(): string | undefined {
+    return this.currentUser()?.id;
   }
 }

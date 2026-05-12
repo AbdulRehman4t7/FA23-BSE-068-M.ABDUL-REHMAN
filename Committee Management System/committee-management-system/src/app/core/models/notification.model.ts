@@ -1,12 +1,13 @@
-export type NotificationType =
-  | 'turn_reminder'
-  | 'payment_due'
-  | 'new_committee'
-  | 'payment_confirmed'
+export type NotificationType = 
+  | 'turn_reminder' 
+  | 'payment_due' 
+  | 'new_committee' 
+  | 'payment_confirmed' 
   | 'member_added'
+  | 'join_request'
   | 'committee_active';
 
-export interface AppNotification {
+export interface Notification {
   id: string;
   user_id: string;
   title: string;
@@ -14,5 +15,5 @@ export interface AppNotification {
   type: NotificationType;
   is_read: boolean;
   created_at: string;
-  related_committee_id: string | null;
+  related_committee_id?: string;
 }

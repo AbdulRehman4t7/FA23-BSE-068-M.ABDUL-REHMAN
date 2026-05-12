@@ -1,27 +1,40 @@
 import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { CommitteeMember } from '../../core/models/committee.model';
+import { ReputationBadgeComponent } from './reputation-badge.component';
 
 @Component({
   selector: 'app-member-card',
   standalone: true,
-  imports: [MatCardModule, MatIconModule],
+  imports: [CommonModule, MatCardModule, MatIconModule, ReputationBadgeComponent],
   template: `
-    <mat-card class="!rounded-xl !shadow-sm">
-      <mat-card-content class="!p-4 flex items-center gap-3">
-        <img [src]="avatarUrl || 'https://placehold.co/80x80'" alt="avatar" class="w-12 h-12 rounded-full object-cover" />
-        <div class="flex-1">
-          <p class="font-semibold">{{ name }}</p>
-          <p class="text-sm text-slate-500">Turn Month: {{ turnMonth }}</p>
+    @if (member) {
+      <mat-card class="p-4">
+        <div class="flex items-center gap-3">
+          @if (member.profile?.avatar_url) {
+            <img [src]="member.profile.avatar_url" class="w-12 h-12 rounded-full" [alt]="member.profile.full_name">
+          } @else {
+            <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+              <mat-icon>person</mat-icon>
+            </div>
+          }
+          <div class="flex-1">
+            <h3 class="font-semibold">{{ member.profile?.full_name }}</h3>
+            <p class="text-sm text-gray-600">Slot {{ member.slot_number }} • Turn: Month {{ member.turn_month }}</p>
+            @if (member.profile) {
+              <app-reputation-badge 
+                [score]="member.profile.reputation_score" 
+                [badge]="member.profile.badge">
+              </app-reputation-badge>
+            }
+          </div>
         </div>
-        <div class="text-amber-500">★ {{ reputation.toFixed(1) }}</div>
-      </mat-card-content>
-    </mat-card>
+      </mat-card>
+    }
   `
 })
 export class MemberCardComponent {
-  @Input() name = '';
-  @Input() avatarUrl: string | null = null;
-  @Input() turnMonth = 1;
-  @Input() reputation = 0;
+  @Input() member?: CommitteeMember;
 }

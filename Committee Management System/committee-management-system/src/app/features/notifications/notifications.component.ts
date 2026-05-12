@@ -1,56 +1,80 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDividerModule } from '@angular/material/divider';
 import { NotificationService } from '../../core/services/notification.service';
 import { TimeAgoPipe } from '../../shared/pipes/time-ago.pipe';
-import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-notifications',
   standalone: true,
-  imports: [MatCardModule, MatButtonModule, TimeAgoPipe],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDividerModule,
+    TimeAgoPipe
+  ],
   template: `
-    <section class="space-y-4">
-      <div class="flex justify-between items-center">
-        <h1 class="font-heading text-2xl">Notifications</h1>
-        <button mat-stroked-button (click)="markAllRead()">Mark all as read</button>
-      </div>
-      <div class="space-y-3">
-        @for (item of notificationService.items(); track item.id) {
-          <mat-card>
-            <mat-card-content class="!p-4 flex justify-between items-start">
-              <div>
-                <p class="font-semibold">{{ item.title }}</p>
-                <p class="text-sm text-slate-600">{{ item.message }}</p>
-                <p class="text-xs text-slate-400 mt-1">{{ item.created_at | timeAgo }}</p>
-              </div>
-              @if (!item.is_read) {
-                <button mat-button class="!text-amber-600" (click)="markRead(item.id)">Mark read</button>
-              }
-            </mat-card-content>
-          </mat-card>
-        } @empty {
-          <mat-card><mat-card-content class="!p-6 text-slate-500">No notifications yet.</mat-card-content></mat-card>
+    <div class="max-w-4xl mx-auto py-8">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">Notifications</h1>
+        @if (notificationService.unreadCount() > 0) {
+          <button mat-button (click)="markAllAsRead()">Mark all as read</button>
         }
       </div>
-    </section>
+
+      <mat-card>
+        @if (notificationService.notifications().length === 0) {
+          <div class="text-center py-12">
+            <mat-icon class="text-6xl text-gray-400">notifications_none</mat-icon>
+            <p class="text-gray-600 mt-4">No notifications yet</p>
+          </div>
+        } @else {
+          <div class="divide-y">
+            @for (notification of notificationService.notifications(); track notification.id) {
+              <div class="p-4 hover:bg-gray-50 cursor-pointer" 
+                   [class.bg-blue-50]="!notification.is_read"
+                   (click)="markAsRead(notification.id)">
+                <div class="flex items-start gap-4">
+                  <mat-icon [class]="notificationService.getNotificationColor(notification.type)">
+                    {{ notificationService.getNotificationIcon(notification.type) }}
+                  </mat-icon>
+                  <div class="flex-1">
+                    <h3 class="font-semibold">{{ notification.title }}</h3>
+                    <p class="text-sm text-gray-600">{{ notification.message }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ notification.created_at | timeAgo }}</p>
+                  </div>
+                  @if (!notification.is_read) {
+                    <div class="w-2 h-2 bg-blue-600 rounded-full"></div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </mat-card>
+    </div>
   `
 })
-export class NotificationsComponent {
-  readonly notificationService = inject(NotificationService);
-  private readonly toastr = inject(ToastrService);
+export class NotificationsComponent implements OnInit {
+  constructor(public notificationService: NotificationService) {}
 
-  constructor() {
-    void this.notificationService.load();
-    this.notificationService.startRealtime();
+  ngOnInit() {}
+
+  async markAsRead(id: string) {
+    await this.notificationService.markAsRead(id);
   }
 
-  async markAllRead(): Promise<void> {
-    await this.notificationService.markAllAsRead();
-    this.toastr.success('All notifications marked as read');
-  }
-
-  async markRead(notificationId: string): Promise<void> {
-    await this.notificationService.markAsRead(notificationId);
+  async markAllAsRead() {
+    const userId = this.notificationService.notifications()[0]?.user_id;
+    if (userId) {
+      await this.notificationService.markAllAsRead(userId);
+    }
   }
 }

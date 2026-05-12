@@ -1,188 +1,286 @@
-import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
+import { Component, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { CurrencyPkrPipe } from '../../shared/pipes/currency-pkr.pipe';
-import { CommitteeService } from '../../core/services/committee.service';
-import { PaymentService } from '../../core/services/payment.service';
+import { FormsModule } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
+import { CommitteeService } from '../../core/services/committee.service';
 import { AuthService } from '../../core/services/auth.service';
-import { CommitteeWithMeta } from '../../core/models/committee.model';
+import { Committee } from '../../core/models/committee.model';
+import { CurrencyPkrPipe } from '../../shared/pipes/currency-pkr.pipe';
+import { StatusColorPipe } from '../../shared/pipes/status-color.pipe';
+import { ReputationBadgeComponent } from '../../shared/components/reputation-badge.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [RouterLink, ReactiveFormsModule, MatTabsModule, MatCardModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, CurrencyPkrPipe],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    MatTabsModule,
+    MatCardModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    CurrencyPkrPipe,
+    StatusColorPipe,
+    ReputationBadgeComponent
+  ],
   template: `
-    <section class="space-y-4">
-      <div class="flex justify-between items-center">
-        <h1 class="font-heading text-2xl">Dashboard</h1>
-        <a mat-raised-button class="!bg-navy !text-white" routerLink="/committee/create">Create Committee</a>
+    <div class="max-w-7xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-slate-900">Dashboard</h1>
+        <button mat-raised-button color="primary" routerLink="/committee/create">
+          <mat-icon>add</mat-icon>
+          Create Committee
+        </button>
       </div>
 
-      @if (loading) {
-        <div class="grid md:grid-cols-3 gap-4 animate-pulse">
-          <div class="h-40 rounded-xl bg-slate-200"></div>
-          <div class="h-40 rounded-xl bg-slate-200"></div>
-          <div class="h-40 rounded-xl bg-slate-200"></div>
-        </div>
-      }
-
-      <mat-tab-group>
+      <mat-tab-group class="mb-6">
+        <!-- My Committees Tab -->
         <mat-tab label="My Committees">
-          <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-4">
-            @for (committee of committeeService.myCommittees(); track committee.id) {
-              <mat-card>
-                <mat-card-content class="!p-4 space-y-2">
-                  <h3 class="font-semibold">{{ committee.name }}</h3>
-                  <p class="text-sm text-slate-500">{{ committee.monthly_amount | currencyPkr }} / month</p>
-                  <p class="text-sm">Members: {{ committee.current_members_count }}/{{ committee.max_members }}</p>
-                  <p class="text-sm">Current month: {{ currentMonth(committee) }}</p>
-                  <p class="text-sm">My turn: {{ committee.user_membership?.turn_month ?? '-' }}</p>
-                  <p class="text-sm">Status: <span class="font-medium">{{ committee.status }}</span></p>
-                  <div class="flex gap-2 flex-wrap">
-                    <a mat-stroked-button [routerLink]="['/committee', committee.id]">View Details</a>
-                    <a mat-button [routerLink]="['/committee', committee.id, 'payments']">Mark Payment</a>
-                    <button mat-button class="!text-amber-600" (click)="sendReminder(committee)">Send Reminder</button>
-                  </div>
-                </mat-card-content>
-              </mat-card>
-            } @empty {
-              <mat-card><mat-card-content class="!p-6 text-slate-500">No committees yet.</mat-card-content></mat-card>
+          <div class="py-6">
+            @if (loading()) {
+              <div class="text-center py-12">
+                <mat-icon class="text-6xl text-gray-400 animate-spin">refresh</mat-icon>
+                <p class="text-gray-600 mt-4">Loading committees...</p>
+              </div>
+            } @else if (myCommittees().length === 0) {
+              <div class="text-center py-12">
+                <mat-icon class="text-6xl text-gray-400">group</mat-icon>
+                <p class="text-gray-600 mt-4">You haven't joined any committees yet</p>
+                <button mat-raised-button color="primary" routerLink="/committee/create" class="mt-4">
+                  Create Your First Committee
+                </button>
+              </div>
+            } @else {
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @for (committee of myCommittees(); track committee.id) {
+                  <mat-card class="hover:shadow-lg transition-shadow cursor-pointer" 
+                            [routerLink]="['/committee', committee.id]">
+                    <mat-card-header>
+                      <mat-card-title class="text-lg">{{ committee.name }}</mat-card-title>
+                      <mat-card-subtitle>
+                        <span [class]="committee.status | statusColor" 
+                              class="px-2 py-1 rounded-full text-xs font-medium">
+                          {{ committee.status | titlecase }}
+                        </span>
+                      </mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                      <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Monthly Amount:</span>
+                          <span class="font-semibold">{{ committee.monthly_amount | currencyPkr }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Duration:</span>
+                          <span class="font-semibold">{{ committee.total_months }} months</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Members:</span>
+                          <span class="font-semibold">{{ committee.current_members_count }}/{{ committee.max_members }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Start Date:</span>
+                          <span class="font-semibold">{{ committee.start_date | date:'MMM d, y' }}</span>
+                        </div>
+                      </div>
+                    </mat-card-content>
+                    <mat-card-actions class="flex justify-end gap-2">
+                      <button mat-button color="primary" [routerLink]="['/committee', committee.id]">
+                        View Details
+                      </button>
+                    </mat-card-actions>
+                  </mat-card>
+                }
+              </div>
             }
           </div>
         </mat-tab>
-        <mat-tab label="Explore">
-          <form class="grid md:grid-cols-5 gap-3 mt-4" [formGroup]="filtersForm" (ngSubmit)="applyExploreFilter()">
-            <mat-form-field appearance="outline">
-              <mat-label>Min Amount</mat-label>
-              <input matInput type="number" formControlName="minAmount" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Max Amount</mat-label>
-              <input matInput type="number" formControlName="maxAmount" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Duration (months)</mat-label>
-              <mat-select formControlName="duration">
-                <mat-option [value]="null">Any</mat-option>
-                <mat-option [value]="6">6</mat-option>
-                <mat-option [value]="10">10</mat-option>
-                <mat-option [value]="12">12</mat-option>
-              </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Min slots available</mat-label>
-              <input matInput type="number" formControlName="slotsAvailable" />
-            </mat-form-field>
-            <mat-form-field appearance="outline">
-              <mat-label>Creator rating min</mat-label>
-              <input matInput type="number" formControlName="creatorRating" min="0" max="5" step="0.1" />
-            </mat-form-field>
-            <button mat-raised-button class="!bg-amber-500 !text-white h-14 mt-1 md:col-span-5">Apply Filters</button>
-          </form>
 
-          <div class="grid md:grid-cols-2 xl:grid-cols-3 gap-4 mt-3">
-            @for (committee of committeeService.publicCommittees(); track committee.id) {
-              <mat-card>
-                <mat-card-content class="!p-4 space-y-2">
-                  <h3 class="font-semibold">{{ committee.name }}</h3>
-                  <p class="text-sm">{{ committee.monthly_amount | currencyPkr }} · {{ committee.total_months }} months</p>
-                  <p class="text-sm">Slots: {{ committee.current_members_count }}/{{ committee.max_members }}</p>
-                  <p class="text-sm">
-                    Creator: {{ committee.creator_profile?.full_name || 'Unknown' }}
-                    · ★{{ committee.creator_profile?.reputation_score ?? 0 }}
-                    · {{ committee.creator_profile?.badge || 'new' }}
-                  </p>
-                  <button mat-raised-button color="primary" class="mt-1 !bg-navy" (click)="request(committee.id)">Request to Join</button>
-                </mat-card-content>
-              </mat-card>
-            } @empty {
-              <mat-card><mat-card-content class="!p-6 text-slate-500">No public committees available.</mat-card-content></mat-card>
+        <!-- Explore Tab -->
+        <mat-tab label="Explore">
+          <div class="py-6">
+            <!-- Filters -->
+            <mat-card class="mb-6">
+              <mat-card-content>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <mat-form-field appearance="outline">
+                    <mat-label>Min Amount</mat-label>
+                    <input matInput type="number" [(ngModel)]="filters.minAmount" 
+                           (ngModelChange)="applyFilters()">
+                    <span matPrefix>PKR&nbsp;</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Max Amount</mat-label>
+                    <input matInput type="number" [(ngModel)]="filters.maxAmount" 
+                           (ngModelChange)="applyFilters()">
+                    <span matPrefix>PKR&nbsp;</span>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Duration</mat-label>
+                    <mat-select [(ngModel)]="filters.duration" (ngModelChange)="applyFilters()">
+                      <mat-option [value]="undefined">All</mat-option>
+                      <mat-option [value]="6">6 months</mat-option>
+                      <mat-option [value]="10">10 months</mat-option>
+                      <mat-option [value]="12">12 months</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline">
+                    <mat-label>Min Reputation</mat-label>
+                    <mat-select [(ngModel)]="filters.minReputation" (ngModelChange)="applyFilters()">
+                      <mat-option [value]="undefined">All</mat-option>
+                      <mat-option [value]="2.0">2.0+</mat-option>
+                      <mat-option [value]="3.5">3.5+</mat-option>
+                      <mat-option [value]="4.5">4.5+</mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+              </mat-card-content>
+            </mat-card>
+
+            @if (loadingPublic()) {
+              <div class="text-center py-12">
+                <mat-icon class="text-6xl text-gray-400 animate-spin">refresh</mat-icon>
+                <p class="text-gray-600 mt-4">Loading public committees...</p>
+              </div>
+            } @else if (publicCommittees().length === 0) {
+              <div class="text-center py-12">
+                <mat-icon class="text-6xl text-gray-400">search_off</mat-icon>
+                <p class="text-gray-600 mt-4">No public committees found</p>
+              </div>
+            } @else {
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                @for (committee of publicCommittees(); track committee.id) {
+                  <mat-card class="hover:shadow-lg transition-shadow">
+                    <mat-card-header>
+                      <mat-card-title class="text-lg">{{ committee.name }}</mat-card-title>
+                      <mat-card-subtitle>
+                        @if (committee.creator) {
+                          <div class="flex items-center gap-2 mt-2">
+                            <span class="text-xs text-gray-600">by {{ committee.creator.full_name }}</span>
+                            <app-reputation-badge 
+                              [score]="committee.creator.reputation_score" 
+                              [badge]="committee.creator.badge">
+                            </app-reputation-badge>
+                          </div>
+                        }
+                      </mat-card-subtitle>
+                    </mat-card-header>
+                    <mat-card-content>
+                      <p class="text-sm text-gray-600 mb-4">{{ committee.description }}</p>
+                      <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Monthly Amount:</span>
+                          <span class="font-semibold">{{ committee.monthly_amount | currencyPkr }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Duration:</span>
+                          <span class="font-semibold">{{ committee.total_months }} months</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-gray-600">Slots Available:</span>
+                          <span class="font-semibold">
+                            {{ committee.max_members - committee.current_members_count }}/{{ committee.max_members }}
+                          </span>
+                        </div>
+                      </div>
+                    </mat-card-content>
+                    <mat-card-actions class="flex justify-between">
+                      <button mat-button [routerLink]="['/committee', committee.id]">View Details</button>
+                      <button mat-raised-button color="primary" (click)="requestToJoin(committee.id)">
+                        Request to Join
+                      </button>
+                    </mat-card-actions>
+                  </mat-card>
+                }
+              </div>
             }
           </div>
         </mat-tab>
       </mat-tab-group>
-    </section>
+    </div>
   `
 })
-export class DashboardComponent {
-  readonly committeeService = inject(CommitteeService);
-  private readonly paymentService = inject(PaymentService);
-  private readonly toastr = inject(ToastrService);
-  private readonly auth = inject(AuthService);
-  private readonly fb = inject(FormBuilder);
-  loading = true;
+export class DashboardComponent implements OnInit {
+  myCommittees = signal<Committee[]>([]);
+  publicCommittees = signal<Committee[]>([]);
+  loading = signal(false);
+  loadingPublic = signal(false);
 
-  readonly filtersForm = this.fb.group({
-    minAmount: [null as number | null],
-    maxAmount: [null as number | null],
-    duration: [null as number | null],
-    slotsAvailable: [null as number | null],
-    creatorRating: [null as number | null]
-  });
+  filters = {
+    minAmount: undefined as number | undefined,
+    maxAmount: undefined as number | undefined,
+    duration: undefined as number | undefined,
+    minReputation: undefined as number | undefined
+  };
 
-  constructor() {
-    void this.load();
+  constructor(
+    private committeeService: CommitteeService,
+    private authService: AuthService,
+    private toastr: ToastrService
+  ) {}
+
+  async ngOnInit() {
+    await this.loadMyCommittees();
+    await this.loadPublicCommittees();
   }
 
-  async load(): Promise<void> {
-    this.loading = true;
-    await Promise.all([this.committeeService.loadMyCommittees(), this.committeeService.loadPublicCommittees()]);
-    this.loading = false;
-  }
+  async loadMyCommittees() {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
 
-  currentMonth(committee: CommitteeWithMeta): number {
-    const now = new Date();
-    const start = new Date(committee.start_date);
-    if (Number.isNaN(start.getTime()) || now < start) return 1;
-    const months = (now.getFullYear() - start.getFullYear()) * 12 + now.getMonth() - start.getMonth() + 1;
-    return Math.min(committee.total_months, Math.max(1, months));
-  }
-
-  async applyExploreFilter(): Promise<void> {
-    const form = this.filtersForm.getRawValue();
-    await this.committeeService.loadPublicCommittees({
-      minAmount: form.minAmount ?? undefined,
-      maxAmount: form.maxAmount ?? undefined,
-      duration: form.duration ?? undefined,
-      slotsAtLeast: form.slotsAvailable ?? undefined,
-      minCreatorReputation: form.creatorRating ?? undefined
-    });
-  }
-
-  async request(committeeId: string): Promise<void> {
+    this.loading.set(true);
     try {
-      await this.committeeService.requestToJoin(committeeId);
-      this.toastr.success('Join request submitted');
+      const committees = await this.committeeService.getMyCommittees(userId);
+      this.myCommittees.set(committees);
     } catch (error) {
-      this.toastr.error((error as Error).message);
+      this.toastr.error('Failed to load committees', 'Error');
+    } finally {
+      this.loading.set(false);
     }
   }
 
-  async sendReminder(committee: CommitteeWithMeta): Promise<void> {
+  async loadPublicCommittees() {
+    this.loadingPublic.set(true);
     try {
-      const currentUserId = this.auth.user()?.id;
-      const members = await this.committeeService.getMembers(committee.id);
-      const receivers = members.filter((member) => member.user_id !== currentUserId && member.status === 'active');
-      await Promise.all(
-        receivers.map((member) =>
-          this.paymentService.sendPaymentReminder({
-            userId: member.user_id,
-            committeeId: committee.id,
-            committeeName: committee.name,
-            monthNumber: this.currentMonth(committee)
-          })
-        )
-      );
-      this.toastr.info('Reminder sent');
+      const committees = await this.committeeService.getPublicCommittees(this.filters);
+      this.publicCommittees.set(committees);
     } catch (error) {
-      this.toastr.error((error as Error).message);
+      this.toastr.error('Failed to load public committees', 'Error');
+    } finally {
+      this.loadingPublic.set(false);
+    }
+  }
+
+  applyFilters() {
+    this.loadPublicCommittees();
+  }
+
+  async requestToJoin(committeeId: string) {
+    const userId = this.authService.getUserId();
+    if (!userId) return;
+
+    try {
+      await this.committeeService.requestToJoin(committeeId, userId);
+      this.toastr.success('Join request sent successfully', 'Success');
+    } catch (error: any) {
+      this.toastr.error(error.message || 'Failed to send join request', 'Error');
     }
   }
 }
