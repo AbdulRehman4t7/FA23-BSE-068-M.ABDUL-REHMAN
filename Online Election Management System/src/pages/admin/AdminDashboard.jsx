@@ -123,7 +123,7 @@ const AdminDashboard = () => {
               <Bar dataKey="elections" fill="url(#adminBar1)" radius={[6,6,0,0]} />
               <defs>
                 <linearGradient id="adminBar1" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#2563eb" /><stop offset="100%" stopColor="#0d9488" />
+                  <stop offset="0%" stopColor="#1d48c8" /><stop offset="100%" stopColor="#e11d48" />
                 </linearGradient>
               </defs>
             </BarChart>
@@ -140,7 +140,7 @@ const AdminDashboard = () => {
               <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#94a3b8' }} />
               <YAxis hide />
               <Tooltip contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 24px rgba(0,0,0,0.1)', fontSize: 12 }} />
-              <Line type="monotone" dataKey="users" stroke="#0d9488" strokeWidth={2.5} dot={{ r: 4, fill: '#0d9488' }} activeDot={{ r: 6 }} />
+              <Line type="monotone" dataKey="users" stroke="#e11d48" strokeWidth={2.5} dot={{ r: 4, fill: '#e11d48' }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>

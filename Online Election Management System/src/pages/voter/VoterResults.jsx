@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { motion } from 'framer-motion'
 
-const COLORS = ['#2563eb', '#0d9488', '#7c3aed', '#ea580c', '#16a34a']
+const COLORS = ['#255ee2', '#e11d48', '#7c3aed', '#ea580c', '#16a34a']
 
 const VoterResults = () => {
   const { user } = useAuth()
