@@ -2,6 +2,38 @@
 
 VoteSecure is a complete, production-ready Secure Online Election Management System built with React, Vite, Tailwind CSS v4, and Supabase. It offers a transparent, secure, and modern platform for conducting digital elections with full auditability, role-based access control, and cryptographic security measures.
 
+## 📸 Project Outputs
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/9bf866ed-f6d6-47d8-b123-08699410c73f" width="420"/><br/>
+      <sub><b>Output 1</b></sub>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/d328146e-beb3-4513-8a0a-1acfc817ee6a" width="220"/><br/>
+      <sub><b>Output 2</b></sub>
+    </td>
+  </tr>
+
+  <tr>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/91fca70c-663b-42a0-a577-64425992cd0a" width="420"/><br/>
+      <sub><b>Output 3</b></sub>
+    </td>
+    <td align="center">
+      <img src="https://github.com/user-attachments/assets/c359ec71-c700-47f2-b70e-9f44e8d2ec9f" width="420"/><br/>
+      <sub><b>Output 4</b></sub>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+
+
 ## ⚡ Quick Fix (If You Have Issues)
 
 If you're facing role or voting issues, run this in Supabase SQL Editor:
