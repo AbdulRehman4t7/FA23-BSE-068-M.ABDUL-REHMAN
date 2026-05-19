@@ -8,7 +8,7 @@ import { CardSkeleton } from '../../components/ui/Skeleton'
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid } from 'recharts'
 import { Vote, ArrowLeft, Users, Trophy } from 'lucide-react'
 
-const COLORS = ['#3b82f6', '#0d9488', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b']
+const COLORS = ['#255ee2', '#e11d48', '#f59e0b', '#8b5cf6', '#ec4899', '#64748b']
 
 const ResultsPage = () => {
   const { id } = useParams()

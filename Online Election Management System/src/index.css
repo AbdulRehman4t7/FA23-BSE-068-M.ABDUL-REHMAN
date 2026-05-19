@@ -1,27 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6;
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
-  --color-teal-50: #f0fdfa;
-  --color-teal-100: #ccfbf1;
-  --color-teal-200: #99f6e4;
-  --color-teal-300: #5eead4;
-  --color-teal-400: #2dd4bf;
-  --color-teal-500: #14b8a6;
-  --color-teal-600: #0d9488;
-  --color-teal-700: #0f766e;
-  --color-teal-800: #115e59;
-  --color-teal-900: #134e4a;
+  --color-primary-50: #f0f5ff;
+  --color-primary-100: #e0ebfe;
+  --color-primary-200: #c3d7fc;
+  --color-primary-300: #96bdfa;
+  --color-primary-400: #649bf6;
+  --color-primary-500: #3b7aed;
+  --color-primary-600: #255ee2;
+  --color-primary-700: #1d48c8;
+  --color-primary-800: #1e3ca6;
+  --color-primary-900: #1d3484;
+  --color-primary-950: #121e54;
+  --color-teal-50: #fff1f2;
+  --color-teal-100: #ffe4e6;
+  --color-teal-200: #fecdd3;
+  --color-teal-300: #fda4af;
+  --color-teal-400: #fb7185;
+  --color-teal-500: #f43f5e;
+  --color-teal-600: #e11d48;
+  --color-teal-700: #be123c;
+  --color-teal-800: #9f1239;
+  --color-teal-900: #881337;
+  --color-teal-950: #4c0519;
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-display: 'Poppins', system-ui, sans-serif;
   --animate-shimmer: shimmer 2s linear infinite;
@@ -30,11 +31,11 @@
   --animate-slide-down: slideDown 0.4s ease-out;
   --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   --animate-count-down: countdown 1s ease-in-out infinite;
-  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  --shadow-card: 0 4px 24px rgba(0,0,0,0.08);
-  --shadow-card-hover: 0 12px 40px rgba(0,0,0,0.15);
-  --shadow-primary: 0 4px 20px rgba(30, 58, 138, 0.4);
-  --shadow-teal: 0 4px 20px rgba(13, 148, 136, 0.4);
+  --shadow-glass: 0 8px 32px 0 rgba(15, 23, 42, 0.25);
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.06);
+  --shadow-card-hover: 0 12px 40px rgba(0,0,0,0.12);
+  --shadow-primary: 0 4px 20px rgba(37, 94, 226, 0.35);
+  --shadow-teal: 0 4px 20px rgba(225, 29, 72, 0.35);
 }
 
 @layer base {
@@ -195,10 +196,10 @@
     @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-200;
   }
   .bg-hero {
-    background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #0f766e 100%);
+    background: linear-gradient(135deg, #121e54 0%, #1d48c8 50%, #e11d48 100%);
   }
   .bg-sidebar {
-    background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+    background: linear-gradient(180deg, #121e54 0%, #1d3484 100%);
   }
   .scrollbar-thin {
     scrollbar-width: thin;
@@ -211,7 +212,7 @@
 
 /* Animated background for auth pages */
 .auth-bg {
-  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #0d9488 100%);
+  background: linear-gradient(135deg, #121e54 0%, #1d48c8 50%, #e11d48 100%);
   position: relative;
   overflow: hidden;
 }
@@ -232,7 +233,7 @@
   width: 400px;
   height: 400px;
   border-radius: 50%;
-  background: rgba(13,148,136,0.1);
+  background: rgba(225, 29, 72, 0.1);
   bottom: -150px;
   right: -150px;
   animation: float 6s ease-in-out infinite reverse;

@@ -277,8 +277,8 @@ const LandingPage = () => {
                     <Bar dataKey="elections" fill="url(#barGrad)" radius={[6,6,0,0]} />
                     <defs>
                       <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#2563eb" />
-                        <stop offset="100%" stopColor="#0d9488" />
+                        <stop offset="0%" stopColor="#1d48c8" />
+                        <stop offset="100%" stopColor="#e11d48" />
                       </linearGradient>
                     </defs>
                   </BarChart>

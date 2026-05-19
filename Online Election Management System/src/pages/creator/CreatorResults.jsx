@@ -6,7 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 
 import { BarChart3, Trophy, Vote, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
 
-const COLORS = ['#2563eb', '#0d9488', '#7c3aed', '#ea580c', '#16a34a', '#db2777']
+const COLORS = ['#255ee2', '#e11d48', '#7c3aed', '#ea580c', '#16a34a', '#db2777']
 
 const CreatorResults = () => {
   const { user } = useAuth()
