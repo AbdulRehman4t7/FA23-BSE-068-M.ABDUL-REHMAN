@@ -1,6 +1,105 @@
+
 # Committee Management System
 
 A full-stack rotating savings/BC (Committee) management system built with Angular 17+ and Supabase.
+
+## Outputs
+
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="screenshots/signup.png" width="450" alt="Sign Up Page"/>
+      <br/>
+      <b>Sign Up / Login</b>
+    </td>
+    <td align="center">
+      <img src="screenshots/dashboard.png" width="450" alt="Dashboard"/>
+      <br/>
+      <b>Dashboard</b>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="screenshots/explore.png" width="450" alt="Explore Committees"/>
+      <br/>
+      <b>Explore Committees</b>
+    </td>
+    <td align="center">
+      <img src="screenshots/committee-detail.png" width="450" alt="Committee Detail"/>
+      <br/>
+      <b>Committee Detail & Payment Matrix</b>
+    </td>
+  </tr>
+</table>
+
+</div>
+
+## Features
+
+### 🔐 Authentication
+- Sign up with email, password, full name, and phone
+- Login with "Remember Me" option
+- Password reset via email
+- Profile picture upload to Supabase Storage
+- Protected routes with auth guards
+
+### 👤 User Profile & Reputation
+- Complete profile with bank details (IBAN, JazzCash, Easypaisa)
+- Reputation scoring system (0-5 stars)
+- Badge system: New, Trusted, Verified, Elite
+- Committee history tracking
+- Public profile viewing
+
+### 🏛️ Committee Management
+- Create committees with customizable parameters
+- Set monthly contribution amount and duration
+- Choose payment methods (Bank, JazzCash, Easypaisa)
+- Public or private committees
+- Automatic activation when all slots filled
+- Member management and slot assignment
+
+### 💰 Payment Tracking
+- Visual payment grid showing all members and months
+- Mark payments as paid with proof upload
+- Payment status: Paid ✅ / Pending ⏳ / Overdue ❌
+- Transaction reference tracking
+- Payment history log
+
+### 📊 Dashboard
+- My Committees tab: View all joined/created committees
+- Explore tab: Browse and join public committees
+- Filter by amount, duration, and reputation
+- Quick actions for payments and reminders
+
+### 🔔 Real-time Notifications
+- Turn reminders (3 days before)
+- Payment due notifications
+- Committee status updates
+- Real-time updates using Supabase Realtime
+- Unread count badge
+
+## Tech Stack
+
+- **Frontend**: Angular 17+ (Standalone Components, Signals)
+- **Backend**: Supabase (Auth, Database, Realtime, Storage)
+- **UI**: Angular Material + Tailwind CSS
+- **State Management**: Angular Signals
+- **Notifications**: ngx-toastr
+- **Charts**: Chart.js + ng2-charts
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js 18+ and npm
+- Supabase account
+
+### 1. Clone and Install
+
+```bash
+cd committee-management-system
+npm install
 
 ## Outputs
 
