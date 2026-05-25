@@ -1,0 +1,8 @@
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;overflow-x:hidden;width:100%;}
+body{width:100%;min-height:100vh;overflow-x:hidden;background:#050510;color:#f0f0f5;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;}
+a{text-decoration:none;color:inherit;}
+button{cursor:pointer;font-family:inherit;border:none;background:none;}
+input,textarea{font-family:inherit;}
+img{max-width:100%;display:block;}
+h1,h2,h3,h4,h5,h6{font-weight:inherit;line-height:1;}
