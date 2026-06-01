@@ -44,8 +44,9 @@ export const createPrescription = asyncHandler(async (req, res) => {
 });
 
 export const getPrescriptionsByAppointment = asyncHandler(async (req, res) => {
+  const appointmentId = req.params.appointmentId;
   const prescriptions = await Prescription.find({
-    appointmentId: req.params.appointmentId,
+    appointmentId,
   }).populate('doctorId', 'name');
 
   await lockPrescriptions(prescriptions);

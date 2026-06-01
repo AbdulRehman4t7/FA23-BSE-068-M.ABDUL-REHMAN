@@ -6,13 +6,36 @@ import asyncHandler from '../utils/asyncHandler.js';
 
 const defaultTimeline = () => [{ step: 'booked', timestamp: new Date() }];
 
+/** Parse YYYY-MM-DD to local noon to avoid timezone day-shift */
+const parseBookingDate = (dateInput) => {
+  if (!dateInput) return null;
+  const str = String(dateInput).slice(0, 10);
+  const [y, m, d] = str.split('-').map(Number);
+  if (!y || !m || !d) return new Date(dateInput);
+  return new Date(y, m - 1, d, 12, 0, 0, 0);
+};
+
+const dayRange = (dateInput) => {
+  const day = parseBookingDate(dateInput);
+  const start = new Date(day);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(day);
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
+};
+
 export const createAppointment = asyncHandler(async (req, res) => {
   const { doctorId, clinicId, date, timeSlot, notes } = req.body;
+
+  if (!doctorId || !clinicId || !date || !timeSlot) {
+    res.status(400);
+    throw new Error('doctorId, clinicId, date, and timeSlot are required');
+  }
 
   const doctor = await Doctor.findById(doctorId);
   if (!doctor?.isApproved) {
     res.status(400);
-    throw new Error('Doctor not available for booking');
+    throw new Error('Doctor is not available for booking (pending approval)');
   }
 
   const clinic = await Clinic.findOne({ _id: clinicId, doctorId });
@@ -21,24 +44,28 @@ export const createAppointment = asyncHandler(async (req, res) => {
     throw new Error('Invalid clinic for this doctor');
   }
 
+  const { start, end } = dayRange(date);
   const existing = await Appointment.findOne({
     clinicId,
-    date: new Date(date),
+    date: { $gte: start, $lte: end },
     timeSlot,
     status: { $nin: ['cancelled'] },
   });
   if (existing) {
     res.status(400);
-    throw new Error('Time slot already booked');
+    throw new Error('This time slot is already booked. Please choose another.');
   }
+
+  const appointmentDate = parseBookingDate(date);
 
   const appointment = await Appointment.create({
     patientId: req.user._id,
     doctorId,
     clinicId,
-    date,
+    date: appointmentDate,
     timeSlot,
     notes,
+    status: 'pending',
     timeline: defaultTimeline(),
   });
 
@@ -56,11 +83,8 @@ export const getAppointments = asyncHandler(async (req, res) => {
 
   if (status) filter.status = status;
   if (date) {
-    const d = new Date(date);
-    filter.date = {
-      $gte: new Date(d.setHours(0, 0, 0, 0)),
-      $lte: new Date(d.setHours(23, 59, 59, 999)),
-    };
+    const { start, end } = dayRange(date);
+    filter.date = { $gte: start, $lte: end };
   }
   if (clinicId) filter.clinicId = clinicId;
 

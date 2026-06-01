@@ -5,17 +5,30 @@ import { getFileUrl } from '../config/multer.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
 export const createPayment = asyncHandler(async (req, res) => {
-  const { appointmentId, amount } = req.body;
+  const appointmentId = req.body?.appointmentId;
+
+  if (!appointmentId) {
+    res.status(400);
+    throw new Error('appointmentId is required');
+  }
 
   if (!req.file) {
     res.status(400);
-    throw new Error('Payment screenshot is required');
+    throw new Error('Payment screenshot is required (JPEG or PNG, max 5MB)');
   }
 
   const appointment = await Appointment.findById(appointmentId);
-  if (!appointment || appointment.patientId.toString() !== req.user._id.toString()) {
+  if (!appointment) {
+    res.status(404);
+    throw new Error('Appointment not found');
+  }
+  if (appointment.patientId.toString() !== req.user._id.toString()) {
     res.status(403);
-    throw new Error('Invalid appointment');
+    throw new Error('You can only pay for your own appointments');
+  }
+  if (appointment.status === 'cancelled') {
+    res.status(400);
+    throw new Error('Cannot pay for a cancelled appointment');
   }
 
   const existing = await Payment.findOne({ appointmentId });
@@ -24,18 +37,27 @@ export const createPayment = asyncHandler(async (req, res) => {
     throw new Error('Payment already submitted for this appointment');
   }
 
+  const amount = Number(req.body.amount);
+  if (!amount || amount <= 0) {
+    res.status(400);
+    throw new Error('Valid payment amount is required');
+  }
+
   const payment = await Payment.create({
     appointmentId,
     screenshot: getFileUrl(req.file.filename),
-    amount: Number(amount),
+    amount,
     status: 'pending',
   });
 
   appointment.paymentId = payment._id;
+  if (!appointment.timeline) appointment.timeline = [];
   appointment.timeline.push({ step: 'payment_uploaded', timestamp: new Date() });
   await appointment.save();
 
-  res.status(201).json({ success: true, payment });
+  const populated = await Appointment.findById(appointmentId).populate('paymentId');
+
+  res.status(201).json({ success: true, payment, appointment: populated });
 });
 
 export const getPendingPayments = asyncHandler(async (req, res) => {
@@ -43,6 +65,14 @@ export const getPendingPayments = asyncHandler(async (req, res) => {
 
   const assignments = await Assistant.find({ userId: req.user._id });
   const clinicIds = assignments.map((a) => a.clinicId.toString());
+
+  if (!clinicIds.length) {
+    return res.json({
+      success: true,
+      payments: [],
+      stats: { pendingCount: 0, verifiedToday: 0 },
+    });
+  }
 
   const appointmentFilter = { clinicId: { $in: clinicIds } };
   if (clinicId && clinicIds.includes(clinicId)) {
@@ -96,10 +126,16 @@ export const verifyPayment = asyncHandler(async (req, res) => {
     throw new Error('Status must be verified or rejected');
   }
 
-  const payment = await Payment.findById(req.params.id).populate('appointmentId');
+  const payment = await Payment.findById(req.params.id);
   if (!payment) {
     res.status(404);
     throw new Error('Payment not found');
+  }
+
+  const appointment = await Appointment.findById(payment.appointmentId);
+  if (!appointment) {
+    res.status(404);
+    throw new Error('Linked appointment not found');
   }
 
   payment.status = status;
@@ -107,7 +143,6 @@ export const verifyPayment = asyncHandler(async (req, res) => {
   payment.verificationNote = verificationNote || '';
   await payment.save();
 
-  const appointment = await Appointment.findById(payment.appointmentId._id);
   if (status === 'verified') {
     appointment.status = 'confirmed';
     appointment.timeline.push({ step: 'payment_verified', timestamp: new Date() });

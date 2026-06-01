@@ -13,8 +13,9 @@ const router = express.Router();
 router.use(protect);
 
 router.post('/', requireRole('doctor'), createPrescription);
-router.get('/patient/:patientId?', getPatientPrescriptions);
-router.get('/:appointmentId', getPrescriptionsByAppointment);
+router.get('/me', getPatientPrescriptions);
+router.get('/patient/:patientId', getPatientPrescriptions);
+router.get('/appointment/:appointmentId', getPrescriptionsByAppointment);
 
 router.put('/:id', checkPrescriptionLock, (_req, res) => {
   res.status(403).json({ success: false, message: 'Prescriptions cannot be edited after creation' });
