@@ -21,8 +21,8 @@ export function PublicFooter() {
               <Link to="/doctors" className="btn-secondary-public bg-white text-[#2563eb] hover:bg-white/90 shadow-xl text-center">
                 Find Doctors
               </Link>
-              <Link to="/register" className="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-white/40 text-white hover:bg-white/10 transition">
-                Get Started Free
+              <Link to="/#search" className="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-white/40 text-white hover:bg-white/10 transition">
+                Book Appointment
               </Link>
             </div>
           </div>

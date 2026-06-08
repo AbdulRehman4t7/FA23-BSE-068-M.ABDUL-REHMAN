@@ -12,9 +12,10 @@ export function PublicHeader() {
           <Logo size="md" subtitle="" />
         </Link>
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-fg">
-          <Link to="/doctors" className="hover:text-[#2563eb] transition-colors">Find Doctors</Link>
-          <a href="/#how-it-works" className="hover:text-[#2563eb] transition-colors">How It Works</a>
-          <a href="/#faq" className="hover:text-[#2563eb] transition-colors">FAQ</a>
+          <Link to="/doctors" className="hover:text-[#2563eb] transition-colors cursor-pointer">Find Doctors</Link>
+          <Link to="/#search" className="hover:text-[#2563eb] transition-colors cursor-pointer">Book Appointment</Link>
+          <Link to="/#how-it-works" className="hover:text-[#2563eb] transition-colors cursor-pointer">How It Works</Link>
+          <Link to="/#faq" className="hover:text-[#2563eb] transition-colors cursor-pointer">FAQ</Link>
         </nav>
         <div className="flex items-center gap-3">
           {user ? (
