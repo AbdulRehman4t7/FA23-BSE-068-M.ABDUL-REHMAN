@@ -1,16 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import { ROLE_DASHBOARD } from '../../utils/constants';
-import { Logo } from '../../components/shared/Logo';
+import { AuthLayout } from '../../components/auth/AuthLayout';
 
 const schema = z.object({
-  email: z.string().email('Invalid email'),
+  email: z.string().email('Please enter a valid email'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
 });
 
@@ -19,6 +18,15 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.registered) {
+      toast.success('Account created! You can now sign in.');
+    }
+    if (location.state?.banned) {
+      toast.error('Your account has been suspended. Contact support.');
+    }
+  }, [location.state]);
 
   const {
     register,
@@ -30,9 +38,10 @@ export default function Login() {
     setLoading(true);
     try {
       const user = await login(data.email, data.password);
-      toast.success(`Welcome back, ${user.name}!`);
+      const firstName = user.name?.split(' ')[0] || 'there';
+      toast.success(`Welcome back, ${firstName}!`);
       const redirect = location.state?.from?.pathname || ROLE_DASHBOARD[user.role];
-      navigate(redirect);
+      navigate(redirect, { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
@@ -41,50 +50,60 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <div className="pointer-events-none absolute left-1/4 top-1/4 h-64 w-64 rounded-full bg-[var(--color-sage)]/10 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-1/4 right-1/4 h-64 w-64 rounded-full bg-[var(--color-brass)]/10 blur-3xl" />
-
-      <motion.div
-        initial={{ opacity: 0, y: 32, scale: 0.98 }}
-        animate={{ opacity: 1, y: 0, scale: 1 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full max-w-md glass p-10"
-      >
-        <div className="mb-10 text-center">
-          <div className="mb-6 flex justify-center">
-            <Logo size="lg" subtitle="Member Portal" />
-          </div>
-          <p className="font-accent text-lg italic text-muted">Sign in to continue your care</p>
+    <AuthLayout>
+      <div className="auth-card">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold">Welcome back</h2>
+          <p className="text-sm text-muted-fg mt-1">Sign in to your Doctor Hub account</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
-            <label className="section-label mb-2 block">Email Address</label>
-            <input className="input-field" type="email" placeholder="you@example.com" {...register('email')} />
-            {errors.email && <p className="mt-1 text-xs text-[var(--color-alert)]">{errors.email.message}</p>}
+            <label htmlFor="email" className="label-public">Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              className="input-public"
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className="text-sm text-[var(--color-destructive)] mt-1">{errors.email.message}</p>
+            )}
           </div>
+
           <div>
-            <label className="section-label mb-2 block">Password</label>
-            <input className="input-field" type="password" placeholder="••••••••" {...register('password')} />
-            {errors.password && <p className="mt-1 text-xs text-[var(--color-alert)]">{errors.password.message}</p>}
+            <label htmlFor="password" className="label-public">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              className="input-public"
+              {...register('password')}
+            />
+            {errors.password && (
+              <p className="text-sm text-[var(--color-destructive)] mt-1">{errors.password.message}</p>
+            )}
           </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full py-3.5">
-            {loading ? 'Signing in...' : 'Enter Portal'}
+
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-sm text-[#2563eb] hover:underline">
+              Forgot password?
+            </Link>
+          </div>
+
+          <button type="submit" disabled={loading} className="btn-primary-public w-full py-3">
+            {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
-        <div className="ornament-line mt-8">
-          <span>or</span>
-        </div>
-
-        <p className="text-center text-sm text-muted">
-          New to Doctor Hub?{' '}
-          <Link to="/register" className="font-medium text-[var(--color-brass)] hover:underline">
-            Create an account
+        <p className="mt-6 text-center text-sm text-muted-fg">
+          Don&apos;t have an account?{' '}
+          <Link to="/register" className="text-[#2563eb] hover:underline font-medium">
+            Register
           </Link>
         </p>
-      </motion.div>
-    </div>
+      </div>
+    </AuthLayout>
   );
 }

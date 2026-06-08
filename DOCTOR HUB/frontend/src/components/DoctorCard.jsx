@@ -3,7 +3,7 @@ import { Star, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TREATMENT_COLORS } from '../utils/constants';
 
-export const DoctorCard = ({ doctor, index = 0 }) => {
+export const DoctorCard = ({ doctor, index = 0, profileBase = '/patient/doctors' }) => {
   const user = doctor.userId;
   const city = doctor.clinics?.[0]?.city;
 
@@ -64,7 +64,7 @@ export const DoctorCard = ({ doctor, index = 0 }) => {
         </div>
 
         <Link
-          to={`/patient/doctors/${doctor._id}`}
+          to={`${profileBase}/${doctor._id}`}
           className="btn-primary mt-5 w-full text-center text-xs tracking-widest"
         >
           Reserve Consultation

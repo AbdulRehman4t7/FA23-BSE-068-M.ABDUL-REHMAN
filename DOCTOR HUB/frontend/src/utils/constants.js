@@ -75,3 +75,64 @@ export const SUPERADMIN_NAV = [
   { to: '/superadmin/audit', label: 'Audit Logs', icon: 'ScrollText' },
   { to: '/superadmin/admins', label: 'Admins', icon: 'Shield' },
 ];
+
+export const PAKISTAN_CITIES = [
+  'Karachi',
+  'Lahore',
+  'Islamabad',
+  'Rawalpindi',
+  'Faisalabad',
+  'Multan',
+  'Peshawar',
+  'Quetta',
+  'Hyderabad',
+  'Sialkot',
+];
+
+export const POPULAR_DISEASES = [
+  'Diabetes',
+  'Hypertension',
+  'Heart Disease',
+  'Skin Problems',
+  'Fever',
+];
+
+export const DOCTOR_CATEGORIES = [
+  {
+    value: 'allopathic',
+    label: 'Allopathic',
+    description: 'Modern medicine practitioners — specialists in diagnosis, surgery, and evidence-based care.',
+    gradient: 'from-blue-500 to-cyan-500',
+  },
+  {
+    value: 'homeopathic',
+    label: 'Homeopathic',
+    description: 'Natural healing through diluted remedies tailored to your constitution and symptoms.',
+    gradient: 'from-teal-500 to-emerald-500',
+  },
+  {
+    value: 'herbal',
+    label: 'Herbal',
+    description: 'Plant-based treatments rooted in traditional wisdom and holistic wellness.',
+    gradient: 'from-green-500 to-lime-500',
+  },
+];
+
+export const TREATMENT_SPECIALTIES = [
+  'Cardiology',
+  'Dermatology',
+  'Pediatrics',
+  'Orthopedics',
+  'Gynecology',
+  'Neurology',
+  'General Medicine',
+  'ENT',
+  'Psychiatry',
+  'Dentistry',
+];
+
+export const PLATFORM_CONTACT = {
+  email: 'support@doctorhub.pk',
+  phone: '+92 300 1234567',
+  headquarters: 'Karachi, Pakistan',
+};

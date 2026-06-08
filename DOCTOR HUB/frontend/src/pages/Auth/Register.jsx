@@ -1,32 +1,32 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import { useAuth } from '../../context/AuthContext';
-import { ROLE_DASHBOARD } from '../../utils/constants';
-import { Logo } from '../../components/shared/Logo';
+import api, { clearStoredTokens } from '../../utils/api';
+import { AuthLayout } from '../../components/auth/AuthLayout';
 
 const schema = z
   .object({
-    name: z.string().min(2, 'Name required'),
-    email: z.string().email(),
-    password: z.string().min(6),
-    confirmPassword: z.string(),
+    name: z.string().min(2, 'Name must be at least 2 characters'),
+    email: z.string().email('Please enter a valid email'),
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirm_password: z.string(),
     role: z.enum(['patient', 'doctor']),
-    phone: z.string().optional(),
     specialization: z.string().optional(),
     treatmentType: z.enum(['allopathic', 'homeopathic', 'herbal']).optional(),
   })
-  .refine((d) => d.password === d.confirmPassword, {
+  .refine((d) => d.password === d.confirm_password, {
     message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  });
+    path: ['confirm_password'],
+  })
+  .refine(
+    (d) => d.role !== 'doctor' || (d.specialization && d.treatmentType),
+    { message: 'Specialization and treatment type required for doctors', path: ['specialization'] }
+  );
 
 export default function Register() {
-  const { register: signup } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
@@ -45,9 +45,17 @@ export default function Register() {
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      const user = await signup(data);
-      toast.success('Account created!');
-      navigate(ROLE_DASHBOARD[user.role]);
+      await api.post('/auth/register', {
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        role: data.role,
+        specialization: data.specialization,
+        treatmentType: data.treatmentType,
+      });
+      clearStoredTokens();
+      toast.success('Account created! You can now sign in.');
+      navigate('/login', { state: { registered: true } });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -56,67 +64,123 @@ export default function Register() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-4 py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 32 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="relative w-full max-w-lg glass p-10"
-      >
-        <div className="mb-8 text-center">
-          <Logo size="md" subtitle="Join the Circle" />
+    <AuthLayout>
+      <div className="auth-card">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold">Create account</h2>
+          <p className="text-sm text-muted-fg mt-1">Join Doctor Hub as a patient or doctor</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="grid grid-cols-2 gap-2">
-            {['patient', 'doctor'].map((r) => (
-              <label key={r} className="cursor-pointer">
-                <input type="radio" value={r} {...register('role')} className="sr-only" />
-                <span
-                  className={`block rounded-sm border py-2.5 text-center text-sm capitalize transition font-medium ${
-                    role === r
-                      ? 'border-[var(--color-brass)] bg-[var(--color-brass)]/15 text-[var(--color-brass-light)]'
-                      : 'border-[var(--color-brass)]/20 text-muted hover:border-[var(--color-brass)]/40'
-                  }`}
-                  style={{ borderRadius: '2px 12px 2px 12px' }}
-                >
-                  {r}
-                </span>
-              </label>
-            ))}
+          <div>
+            <label htmlFor="name" className="label-public">Full Name</label>
+            <input
+              id="name"
+              placeholder="John Doe"
+              className="input-public"
+              {...register('name')}
+            />
+            {errors.name && (
+              <p className="text-sm text-[var(--color-destructive)] mt-1">{errors.name.message}</p>
+            )}
           </div>
 
-          <input className="input-field" placeholder="Full name" {...register('name')} />
-          {errors.name && <p className="text-xs text-[var(--color-alert)]">{errors.name.message}</p>}
+          <div>
+            <label htmlFor="email" className="label-public">Email</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              className="input-public"
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className="text-sm text-[var(--color-destructive)] mt-1">{errors.email.message}</p>
+            )}
+          </div>
 
-          <input className="input-field" placeholder="Email" type="email" {...register('email')} />
-          <input className="input-field" placeholder="Phone" {...register('phone')} />
-          <input className="input-field" placeholder="Password" type="password" {...register('password')} />
-          <input className="input-field" placeholder="Confirm password" type="password" {...register('confirmPassword')} />
+          <div>
+            <label htmlFor="role" className="label-public">Register as</label>
+            <select
+              id="role"
+              className="input-public"
+              {...register('role')}
+            >
+              <option value="patient">Patient</option>
+              <option value="doctor">Doctor</option>
+            </select>
+          </div>
 
           {role === 'doctor' && (
             <>
-              <input className="input-field" placeholder="Specialization" {...register('specialization')} />
-              <select className="input-field" {...register('treatmentType')}>
-                <option value="">Treatment type</option>
-                <option value="allopathic">Allopathic</option>
-                <option value="homeopathic">Homeopathic</option>
-                <option value="herbal">Herbal</option>
-              </select>
+              <div>
+                <label htmlFor="specialization" className="label-public">Specialization</label>
+                <input
+                  id="specialization"
+                  placeholder="e.g. Cardiology"
+                  className="input-public"
+                  {...register('specialization')}
+                />
+                {errors.specialization && (
+                  <p className="text-sm text-[var(--color-destructive)] mt-1">
+                    {errors.specialization.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label htmlFor="treatmentType" className="label-public">Treatment Type</label>
+                <select id="treatmentType" className="input-public" {...register('treatmentType')}>
+                  <option value="">Select type</option>
+                  <option value="allopathic">Allopathic</option>
+                  <option value="homeopathic">Homeopathic</option>
+                  <option value="herbal">Herbal</option>
+                </select>
+              </div>
             </>
           )}
 
-          <button type="submit" disabled={loading} className="btn-primary w-full py-3.5">
-            {loading ? 'Creating...' : 'Create Account'}
+          <div>
+            <label htmlFor="password" className="label-public">Password</label>
+            <input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              className="input-public"
+              {...register('password')}
+            />
+            {errors.password && (
+              <p className="text-sm text-[var(--color-destructive)] mt-1">{errors.password.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="confirm_password" className="label-public">Confirm Password</label>
+            <input
+              id="confirm_password"
+              type="password"
+              placeholder="••••••••"
+              className="input-public"
+              {...register('confirm_password')}
+            />
+            {errors.confirm_password && (
+              <p className="text-sm text-[var(--color-destructive)] mt-1">
+                {errors.confirm_password.message}
+              </p>
+            )}
+          </div>
+
+          <button type="submit" disabled={loading} className="btn-primary-public w-full py-3">
+            {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-muted">
-          Already registered?{' '}
-          <Link to="/login" className="text-[var(--color-brass)] hover:underline">
+        <p className="mt-6 text-center text-sm text-muted-fg">
+          Already have an account?{' '}
+          <Link to="/login" className="text-[#2563eb] hover:underline font-medium">
             Sign in
           </Link>
         </p>
-      </motion.div>
-    </div>
+      </div>
+    </AuthLayout>
   );
 }

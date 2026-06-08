@@ -15,7 +15,12 @@ import {
 import Landing from './pages/Landing';
 import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
+import ForgotPassword from './pages/Auth/ForgotPassword';
+import ResetPassword from './pages/Auth/ResetPassword';
 import NotFound from './pages/errors/NotFound';
+import { PublicLayout } from './components/public/PublicLayout';
+import PublicDoctors from './pages/Public/PublicDoctors';
+import PublicDoctorProfile from './pages/Public/PublicDoctorProfile';
 
 import PatientHome from './pages/Patient/PatientHome';
 import FindDoctors from './pages/Patient/FindDoctors';
@@ -70,6 +75,13 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+            <Route element={<PublicLayout />}>
+              <Route path="/doctors" element={<PublicDoctors />} />
+              <Route path="/doctors/:id" element={<PublicDoctorProfile />} />
+            </Route>
 
             <Route
               path="/patient"
