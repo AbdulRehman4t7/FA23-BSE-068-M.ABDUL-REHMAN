@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
-import api, { clearStoredTokens } from '../../utils/api';
+import { UserPlus, Stethoscope, HeartPulse } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { ROLE_DASHBOARD } from '../../utils/constants';
 import { AuthLayout } from '../../components/auth/AuthLayout';
 
 const schema = z
@@ -28,24 +30,25 @@ const schema = z
 
 export default function Register() {
   const navigate = useNavigate();
+  const { register: createAccount } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues: { role: 'patient' },
   });
 
-  const role = watch('role');
+  const role = useWatch({ control, name: 'role' });
 
   const onSubmit = async (data) => {
     setLoading(true);
     try {
-      await api.post('/auth/register', {
+      const user = await createAccount({
         name: data.name,
         email: data.email,
         password: data.password,
@@ -53,9 +56,8 @@ export default function Register() {
         specialization: data.specialization,
         treatmentType: data.treatmentType,
       });
-      clearStoredTokens();
-      toast.success('Account created! You can now sign in.');
-      navigate('/login', { state: { registered: true } });
+      toast.success('Account created successfully');
+      navigate(ROLE_DASHBOARD[user.role] || '/', { replace: true });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -65,10 +67,13 @@ export default function Register() {
 
   return (
     <AuthLayout>
-      <div className="auth-card">
+      <div className="auth-card auth-card-premium">
         <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold">Create account</h2>
-          <p className="text-sm text-muted-fg mt-1">Join Doctor Hub as a patient or doctor</p>
+          <div className="auth-icon mx-auto mb-4">
+            {role === 'doctor' ? <Stethoscope className="h-5 w-5" /> : <HeartPulse className="h-5 w-5" />}
+          </div>
+          <h2 className="text-2xl font-bold">Create your account</h2>
+          <p className="text-sm text-muted-fg mt-1">Join Doctor Hub as a patient or verified doctor</p>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -170,6 +175,7 @@ export default function Register() {
           </div>
 
           <button type="submit" disabled={loading} className="btn-primary-public w-full py-3">
+            <UserPlus className="h-4 w-4" />
             {loading ? 'Creating account...' : 'Create Account'}
           </button>
         </form>

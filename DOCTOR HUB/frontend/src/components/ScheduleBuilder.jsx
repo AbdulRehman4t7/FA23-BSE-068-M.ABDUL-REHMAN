@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 
@@ -23,22 +23,23 @@ const defaultSchedule = () =>
     blockedSlots: [],
   }));
 
+const scheduleFromClinic = (clinic) => {
+  if (!clinic?.schedule?.length) return defaultSchedule();
+
+  return DAYS.map((d) => {
+    const existing = clinic.schedule.find((s) => s.day === d.key);
+    return existing || { day: d.key, startTime: '09:00', endTime: '17:00', isActive: false, blockedSlots: [] };
+  });
+};
+
 export const ScheduleBuilder = ({ clinic, onSave, saving }) => {
-  const [schedule, setSchedule] = useState(defaultSchedule());
+  const initialSchedule = useMemo(() => scheduleFromClinic(clinic), [clinic]);
+  const [schedule, setSchedule] = useState(initialSchedule);
   const [dragging, setDragging] = useState(null);
 
   useEffect(() => {
-    if (clinic?.schedule?.length) {
-      setSchedule(
-        DAYS.map((d) => {
-          const existing = clinic.schedule.find((s) => s.day === d.key);
-          return existing || { day: d.key, startTime: '09:00', endTime: '17:00', isActive: false, blockedSlots: [] };
-        })
-      );
-    } else {
-      setSchedule(defaultSchedule());
-    }
-  }, [clinic?._id]);
+    queueMicrotask(() => setSchedule(initialSchedule));
+  }, [initialSchedule]);
 
   const toggleSlot = (dayKey, slot, forceBlock) => {
     setSchedule((prev) =>

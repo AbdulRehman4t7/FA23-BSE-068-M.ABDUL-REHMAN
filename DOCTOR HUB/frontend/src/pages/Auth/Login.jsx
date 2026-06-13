@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
+import { LogIn } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { ROLE_DASHBOARD } from '../../utils/constants';
 import { AuthLayout } from '../../components/auth/AuthLayout';
@@ -51,8 +52,11 @@ export default function Login() {
 
   return (
     <AuthLayout>
-      <div className="auth-card">
+      <div className="auth-card auth-card-premium">
         <div className="text-center mb-6">
+          <div className="auth-icon mx-auto mb-4">
+            <LogIn className="h-5 w-5" />
+          </div>
           <h2 className="text-2xl font-bold">Welcome back</h2>
           <p className="text-sm text-muted-fg mt-1">Sign in to your Doctor Hub account</p>
         </div>
@@ -93,6 +97,7 @@ export default function Login() {
           </div>
 
           <button type="submit" disabled={loading} className="btn-primary-public w-full py-3">
+            <LogIn className="h-4 w-4" />
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>

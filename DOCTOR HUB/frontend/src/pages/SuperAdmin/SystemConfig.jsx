@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import { useFetch } from '../../hooks/useFetch';
@@ -10,22 +10,18 @@ export default function SystemConfig() {
     return res.config;
   });
 
-  const [form, setForm] = useState({ maintenanceMode: false, platformName: 'Doctor Hub' });
-
-  useEffect(() => {
-    if (data) {
-      setForm({
-        maintenanceMode: data.maintenanceMode || false,
-        platformName: data.platformName || 'Doctor Hub',
-      });
-    }
-  }, [data]);
+  const [draft, setDraft] = useState(null);
+  const form = draft || {
+    maintenanceMode: data?.maintenanceMode || false,
+    platformName: data?.platformName || 'Doctor Hub',
+  };
 
   const save = async (e) => {
     e.preventDefault();
     try {
       await api.put('/admin/system-config', form);
       toast.success('System config updated');
+      setDraft(null);
       refetch();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Save failed');
@@ -44,7 +40,7 @@ export default function SystemConfig() {
           <input
             className="input-field mt-1"
             value={form.platformName}
-            onChange={(e) => setForm({ ...form, platformName: e.target.value })}
+            onChange={(e) => setDraft({ ...form, platformName: e.target.value })}
           />
         </div>
 
@@ -56,7 +52,7 @@ export default function SystemConfig() {
           <input
             type="checkbox"
             checked={form.maintenanceMode}
-            onChange={(e) => setForm({ ...form, maintenanceMode: e.target.checked })}
+            onChange={(e) => setDraft({ ...form, maintenanceMode: e.target.checked })}
             className="h-5 w-5 accent-teal"
           />
         </label>

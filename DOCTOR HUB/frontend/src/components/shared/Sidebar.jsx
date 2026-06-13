@@ -8,20 +8,18 @@ import { useTheme } from '../../context/ThemeContext';
 import { ROLE_ACCENT } from '../../utils/constants';
 import { Logo } from './Logo';
 
-export const Sidebar = ({ navItems, role }) => {
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const { user, logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
-  const navigate = useNavigate();
-  const accent = ROLE_ACCENT[role] || ROLE_ACCENT.patient;
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
-  const NavContent = () => (
+function NavContent({
+  collapsed,
+  navItems,
+  accent,
+  role,
+  user,
+  theme,
+  toggleTheme,
+  handleLogout,
+  closeMobile,
+}) {
+  return (
     <>
       <div className={`mb-8 px-1 ${collapsed ? 'flex justify-center' : ''}`}>
         <Logo size={collapsed ? 'sm' : 'md'} showText={!collapsed} subtitle={collapsed ? undefined : role} />
@@ -35,7 +33,7 @@ export const Sidebar = ({ navItems, role }) => {
               key={to}
               to={to}
               end={to.split('/').filter(Boolean).length <= 1}
-              onClick={() => setMobileOpen(false)}
+              onClick={closeMobile}
               className={({ isActive }) =>
                 `group flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all ${
                   isActive
@@ -78,7 +76,7 @@ export const Sidebar = ({ navItems, role }) => {
           style={{ borderRadius: '2px 12px 2px 12px' }}
         >
           <LogOut size={20} />
-          {!collapsed && 'Depart'}
+          {!collapsed && 'Logout'}
         </button>
         {!collapsed && user && (
           <p className="truncate px-3 pt-1 font-accent text-xs italic text-muted">{user.email}</p>
@@ -86,6 +84,20 @@ export const Sidebar = ({ navItems, role }) => {
       </div>
     </>
   );
+}
+
+export const Sidebar = ({ navItems, role }) => {
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
+  const accent = ROLE_ACCENT[role] || ROLE_ACCENT.patient;
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   return (
     <>
@@ -110,7 +122,17 @@ export const Sidebar = ({ navItems, role }) => {
         >
           <ChevronLeft size={18} className={`transition ${collapsed ? 'rotate-180' : ''}`} />
         </button>
-        <NavContent />
+        <NavContent
+          collapsed={collapsed}
+          navItems={navItems}
+          accent={accent}
+          role={role}
+          user={user}
+          theme={theme}
+          toggleTheme={toggleTheme}
+          handleLogout={handleLogout}
+          closeMobile={() => setMobileOpen(false)}
+        />
       </aside>
 
       <AnimatePresence>
@@ -130,7 +152,17 @@ export const Sidebar = ({ navItems, role }) => {
               transition={{ type: 'spring', damping: 28 }}
               className="sidebar-panel fixed left-0 top-0 z-50 flex h-full w-[280px] flex-col p-4 lg:hidden"
             >
-              <NavContent />
+              <NavContent
+                collapsed={false}
+                navItems={navItems}
+                accent={accent}
+                role={role}
+                user={user}
+                theme={theme}
+                toggleTheme={toggleTheme}
+                handleLogout={handleLogout}
+                closeMobile={() => setMobileOpen(false)}
+              />
             </motion.aside>
           </>
         )}

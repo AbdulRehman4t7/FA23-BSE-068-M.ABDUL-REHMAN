@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import { useFetch } from '../../hooks/useFetch';

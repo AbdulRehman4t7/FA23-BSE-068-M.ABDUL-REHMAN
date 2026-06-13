@@ -45,18 +45,33 @@ const sanitizeUser = (user) => ({
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password, role, phone, specialization, treatmentType } = req.body;
 
+  const allowedRoles = ['patient', 'doctor'];
+  const userRole = allowedRoles.includes(role) ? role : 'patient';
+
+  if (!name?.trim() || !email?.trim() || !password) {
+    res.status(400);
+    throw new Error('Name, email, and password are required');
+  }
+
+  if (password.length < 6) {
+    res.status(400);
+    throw new Error('Password must be at least 6 characters');
+  }
+
+  if (userRole === 'doctor' && (!specialization?.trim() || !treatmentType)) {
+    res.status(400);
+    throw new Error('Doctors must provide specialization and treatment type');
+  }
+
   const exists = await User.findOne({ email });
   if (exists) {
     res.status(400);
     throw new Error('Email already registered');
   }
 
-  const allowedRoles = ['patient', 'doctor'];
-  const userRole = allowedRoles.includes(role) ? role : 'patient';
-
   const user = await User.create({
-    name,
-    email,
+    name: name.trim(),
+    email: email.trim().toLowerCase(),
     password,
     role: userRole,
     phone,
@@ -64,13 +79,9 @@ export const register = asyncHandler(async (req, res) => {
   });
 
   if (userRole === 'doctor') {
-    if (!specialization || !treatmentType) {
-      res.status(400);
-      throw new Error('Doctors must provide specialization and treatmentType');
-    }
     await Doctor.create({
       userId: user._id,
-      specialization,
+      specialization: specialization.trim(),
       treatmentType,
       isApproved: false,
     });

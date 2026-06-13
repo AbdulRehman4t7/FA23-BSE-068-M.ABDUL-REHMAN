@@ -3,7 +3,7 @@ import { ZoomIn, ZoomOut } from 'lucide-react';
 import { Modal } from './shared/Modal';
 import { formatDate } from '../utils/formatDate';
 
-export const PaymentVerifier = ({ payment, onVerify, onReject }) => {
+export const PaymentVerifier = ({ payment, onVerify }) => {
   const [zoom, setZoom] = useState(1);
   const [confirm, setConfirm] = useState(null);
   const [note, setNote] = useState('');
@@ -23,7 +23,7 @@ export const PaymentVerifier = ({ payment, onVerify, onReject }) => {
         <p><span className="text-white/50">Patient:</span> {apt?.patientId?.name}</p>
         <p><span className="text-white/50">Doctor:</span> {apt?.doctorId?.userId?.name}</p>
         <p><span className="text-white/50">Clinic:</span> {apt?.clinicId?.name}</p>
-        <p><span className="text-white/50">Date:</span> {formatDate(apt?.date)} · {apt?.timeSlot}</p>
+        <p><span className="text-white/50">Date:</span> {formatDate(apt?.date)} - {apt?.timeSlot}</p>
         <p><span className="text-white/50">Amount:</span> Rs. {payment?.amount}</p>
 
         <div className="flex gap-3 pt-4">

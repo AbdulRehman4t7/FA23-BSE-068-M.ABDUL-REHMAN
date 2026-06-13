@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Shield, Clock, Users } from 'lucide-react';
+import { Shield, Clock, Users, Activity } from 'lucide-react';
 import { Logo } from '../shared/Logo';
 
 const features = [
@@ -11,11 +11,9 @@ const features = [
 
 export function AuthLayout({ children }) {
   return (
-    <div className="public-site min-h-screen flex">
+    <div className="public-site min-h-screen flex auth-shell">
       <div className="hidden lg:flex lg:w-1/2 xl:w-[45%] flex-col justify-between p-12 relative overflow-hidden auth-gradient-panel">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#2563eb]/10 via-transparent to-[#0d9488]/10" />
-        <div className="absolute -top-24 -right-24 h-96 w-96 rounded-full bg-[#2563eb]/10 blur-3xl" />
-        <div className="absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-[#0d9488]/10 blur-3xl" />
+        <div className="auth-grid" />
 
         <Link to="/" className="relative inline-flex items-center gap-2.5 font-bold text-xl text-[#0f172a]">
           <Logo size="md" subtitle="" />
@@ -28,8 +26,7 @@ export function AuthLayout({ children }) {
           className="relative space-y-6"
         >
           <h1 className="text-4xl xl:text-5xl font-bold tracking-tight leading-tight text-[#0f172a]">
-            Healthcare made{' '}
-            <span className="gradient-text">simple & secure</span>
+            Healthcare made <span className="gradient-text">simple and secure</span>
           </h1>
           <p className="text-lg text-muted-fg leading-relaxed max-w-md">
             Book appointments with verified doctors across Pakistan. Manage records,
@@ -53,8 +50,16 @@ export function AuthLayout({ children }) {
           </ul>
         </motion.div>
 
+        <div className="relative auth-vitals">
+          <Activity className="h-5 w-5 text-[#14b8a6]" />
+          <div>
+            <p className="text-sm font-bold text-[#0f172a]">Live care network</p>
+            <p className="text-xs text-muted-fg">Appointments, records, and payments synced</p>
+          </div>
+        </div>
+
         <p className="relative text-sm text-muted-fg">
-          Trusted by patients in Karachi, Lahore, Islamabad & beyond
+          Trusted by patients in Karachi, Lahore, Islamabad and beyond
         </p>
       </div>
 

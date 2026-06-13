@@ -2,7 +2,6 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
 import { useFetch } from '../../hooks/useFetch';
-import { ListSkeleton } from '../../components/shared/Skeleton';
 
 export default function AdminSettings() {
   const [form, setForm] = useState({ title: '', message: '', role: '' });
