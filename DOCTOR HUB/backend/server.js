@@ -81,7 +81,16 @@ const startServer = async () => {
   });
 };
 
-startServer().catch((err) => {
-  console.error('Failed to start server:', err);
-  process.exit(1);
-});
+// For Vercel serverless deployment
+if (process.env.VERCEL) {
+  connectDB().catch((err) => {
+    console.error('Failed to connect to MongoDB:', err);
+  });
+} else {
+  startServer().catch((err) => {
+    console.error('Failed to start server:', err);
+    process.exit(1);
+  });
+}
+
+export default app;

@@ -5,3 +5,7 @@ uploads/*
 !backend/uploads/.gitkeep
 *.log
 .DS_Store
+
+# Vercel
+.vercel
+.vercel/*
