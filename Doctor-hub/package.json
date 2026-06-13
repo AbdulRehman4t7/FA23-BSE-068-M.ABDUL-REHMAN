@@ -4,6 +4,7 @@
   "description": "Doctor Hub - Complete Healthcare Management System",
   "private": true,
   "scripts": {
+    "build": "echo 'Root build skipped - deploy backend and frontend separately'",
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "dev:backend": "cd backend && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
@@ -12,6 +13,10 @@
     "start:backend": "cd backend && npm start",
     "build:frontend": "cd frontend && npm run build"
   },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
   "keywords": [
     "doctor",
     "hospital",
