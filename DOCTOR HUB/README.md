@@ -52,6 +52,8 @@ npm run dev
 
 API runs at `http://localhost:5000`
 
+> In development, the backend will auto-seed the demo accounts on first start if the database is empty.
+
 ### 2. Frontend
 
 ```bash

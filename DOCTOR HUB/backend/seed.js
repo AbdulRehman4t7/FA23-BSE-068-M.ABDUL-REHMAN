@@ -1,5 +1,7 @@
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import User from './models/User.js';
 import Doctor from './models/Doctor.js';
 import Clinic from './models/Clinic.js';
@@ -13,8 +15,17 @@ import connectDB from './config/db.js';
 
 dotenv.config();
 
-const seed = async () => {
+const seedFilePath = fileURLToPath(import.meta.url);
+
+const connectIfNeeded = async () => {
+  if (mongoose.connection.readyState === 1) {
+    return;
+  }
+
   await connectDB();
+};
+
+const clearCollections = async () => {
   console.log('Clearing database...');
   await Promise.all([
     User.deleteMany(),
@@ -27,10 +38,12 @@ const seed = async () => {
     Prescription.deleteMany(),
     SystemConfig.deleteMany(),
   ]);
+};
 
+const createDemoData = async () => {
   const password = 'Password@123';
 
-  const superAdmin = await User.create({
+  await User.create({
     name: 'Super Admin',
     email: 'superadmin@doctorhub.com',
     password,
@@ -38,7 +51,7 @@ const seed = async () => {
     isVerified: true,
   });
 
-  const admin = await User.create({
+  await User.create({
     name: 'Platform Admin',
     email: 'admin@doctorhub.com',
     password,
@@ -142,11 +155,33 @@ const seed = async () => {
   console.log('  Assistant:   assistant@doctorhub.com');
   console.log(`\n  Sample appointment ID: ${appointment._id}`);
 
-  await mongoose.disconnect();
-  process.exit(0);
 };
 
-seed().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+export const seedDemoData = async ({ reset = true } = {}) => {
+  await connectIfNeeded();
+  if (reset) {
+    await clearCollections();
+  }
+  await createDemoData();
+};
+
+export const ensureDemoData = async () => {
+  await connectIfNeeded();
+  const userCount = await User.countDocuments();
+  if (userCount > 0) {
+    return { seeded: false };
+  }
+
+  await createDemoData();
+  return { seeded: true };
+};
+
+if (process.argv[1] && path.resolve(process.argv[1]) === seedFilePath) {
+  seedDemoData()
+    .then(() => mongoose.disconnect())
+    .then(() => process.exit(0))
+    .catch((err) => {
+      console.error(err);
+      mongoose.disconnect().finally(() => process.exit(1));
+    });
+}

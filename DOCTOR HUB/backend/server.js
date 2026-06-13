@@ -12,6 +12,7 @@ import connectDB from './config/db.js';
 import errorHandler from './middleware/errorHandler.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
 import { checkMaintenance } from './middleware/maintenance.js';
+import { ensureDemoData } from './seed.js';
 
 import authRoutes from './routes/authRoutes.js';
 import doctorRoutes from './routes/doctorRoutes.js';
@@ -29,8 +30,6 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-
-connectDB();
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(
@@ -67,6 +66,22 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`Doctor Hub API running on port ${PORT}`);
+const startServer = async () => {
+  await connectDB();
+
+  if (process.env.NODE_ENV !== 'production') {
+    const { seeded } = await ensureDemoData();
+    if (seeded) {
+      console.log('Development demo data seeded');
+    }
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Doctor Hub API running on port ${PORT}`);
+  });
+};
+
+startServer().catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
 });
