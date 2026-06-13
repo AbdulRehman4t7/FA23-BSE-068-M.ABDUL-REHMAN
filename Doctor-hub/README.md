@@ -2,6 +2,15 @@
 
 A complete healthcare management system for booking appointments, managing patients, doctors, and clinics.
 
+## 🎬 Demo Video
+
+<div align="center">
+
+[![Watch Demo](https://img.shields.io/badge/▶%20Watch%20Full%20Demo-FF0000?style=for-the-badge&logo=google-drive&logoColor=white)](https://drive.google.com/file/d/13BKq5J8d7A99_wji3fLzgT4Gi2BeDLZl/view?usp=sharing)
+
+> Click the button above to watch the full project demo on Google Drive
+
+</div>
 ## 📸 Screenshots
 
 <div align="center">
