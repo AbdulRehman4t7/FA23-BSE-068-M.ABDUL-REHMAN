@@ -344,6 +344,39 @@ JWT_REFRESH_SECRET=your_refresh_secret_min_32_chars
 VITE_API_URL=http://localhost:5000/api
 ```
 
+## 🚀 Deployment
+
+### Deploy to Vercel
+
+This project is ready for deployment on Vercel with serverless functions.
+
+**Quick Start:**
+1. Read the deployment guide: [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
+2. Setup MongoDB Atlas database
+3. Deploy backend and frontend separately
+4. Configure environment variables
+
+**Deployment Guides:**
+- **English:** [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
+- **Urdu:** [VERCEL_DEPLOYMENT_URDU.md](VERCEL_DEPLOYMENT_URDU.md)
+
+**Check Deployment Readiness:**
+```bash
+deploy-check.bat
+```
+
+### Environment Variables for Production
+
+**Backend (Vercel):**
+- `MONGODB_URI` - MongoDB Atlas connection string
+- `CLIENT_URL` - Your frontend Vercel URL
+- `JWT_ACCESS_SECRET` - JWT access token secret
+- `JWT_REFRESH_SECRET` - JWT refresh token secret
+- All other variables from `.env.production`
+
+**Frontend (Vercel):**
+- `VITE_API_URL` - Your backend Vercel URL + `/api`
+
 ## 🤝 Contributing
 
 1. Fork the repository
