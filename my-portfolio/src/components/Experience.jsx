@@ -1,17 +1,17 @@
 export default function Experience() {
   const experiences = [
     {
-      company: "Arch Technologies",
-      role: "Mobile Application Developer",
+      company: "Developers Hub & Corporation",
+      role: "Full Stack Developer",
       period: "April 2026 — Present",
       duration: "1 month",
       location: "Remote",
-      desc: "Specializing in high-performance mobile application development using cutting-edge technologies.",
+      desc: "Specializing in high-performance WEB DEVELOPMENT using cutting-edge technologies.",
       current: true
     },
     {
       company: "CodeAlpha",
-      role: "App Developer",
+      role: "Full Stack Developer",
       period: "March 2026 — April 2026",
       duration: "2 months",
       location: "Remote",
@@ -19,7 +19,7 @@ export default function Experience() {
     },
     {
       company: "Freelance",
-      role: "Application Developer",
+      role: "Full Stack Developer",
       period: "March 2026 — Present",
       duration: "2 months",
       location: "Remote",
@@ -38,7 +38,7 @@ export default function Experience() {
   return (
     <section id="experience" className="section" style={{ background: "var(--cream)", color: "var(--ink)", borderTop: "1px solid var(--border)" }}>
       <div className="container">
-        
+
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", marginBottom: 64 }}>
           <div className="label rv" style={{ marginBottom: 16 }}>Career Path</div>
           <h2 className="display-sm rv rv-d1" style={{ color: "var(--ink)", marginBottom: 20 }}>
@@ -49,22 +49,22 @@ export default function Experience() {
 
         <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
           {experiences.map((exp, idx) => (
-            <div key={idx} className="rv exp-item experience-grid" style={{ 
-              display: "grid", 
-              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", 
-              gap: "24px 40px", 
+            <div key={idx} className="rv exp-item experience-grid" style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              gap: "24px 40px",
               padding: "48px 0",
               borderBottom: idx === experiences.length - 1 ? "none" : "1px solid var(--border)",
               transition: "all 0.3s ease"
             }}>
               {/* Left Column: Period & Location */}
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <div style={{ 
-                  fontSize: 12, 
-                  fontWeight: 700, 
-                  letterSpacing: "0.1em", 
-                  textTransform: "uppercase", 
-                  color: exp.current ? "var(--red)" : "var(--muted)" 
+                <div style={{
+                  fontSize: 12,
+                  fontWeight: 700,
+                  letterSpacing: "0.1em",
+                  textTransform: "uppercase",
+                  color: exp.current ? "var(--red)" : "var(--muted)"
                 }}>
                   {exp.period}
                 </div>
